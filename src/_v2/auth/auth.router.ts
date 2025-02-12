@@ -2,9 +2,9 @@ import { Router } from 'express';
 import { AuthController as ctrl } from './auth.controller';
 import { AuthValidators as validators } from './auth.validators';
 import { AuthJWT,PostMiddleware } from '../../middlewares';
-import { Routes } from '../v2-routerstrings';
+import { V2Routes } from '../v2-routerstrings';
 
-const routes = Routes.Auth
+const routes = V2Routes.Auth
 const router = Router();
 
 router.post(routes.Signup,[...validators.Signup,ctrl.SignUp,...PostMiddleware]);

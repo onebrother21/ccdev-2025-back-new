@@ -40,8 +40,7 @@ const orderSchema = new Schema<AllTypes.IOrder,OrderModel,AllTypes.IOrderMethods
   scheduledFor:{type:Date,required:true},
   deliveryAddress:{type:addressSchema,required:true},
   deliveredOn:{type:Date},
-  paymentStatus:{type:getStatusSchema(Object.values(AllTypes.IPaymentStatuses))},
-  paymentMethod:{type:String,enum:Object.values(AllTypes.IPaymentMethods)},
+  payment:{type:ObjectId,ref:"payments",required:true},
   items:{type:[itemSchema],required:true},
   charges:{type:chargesSchema,default:() => ({
     subtotal:0,
@@ -103,8 +102,7 @@ orderSchema.methods.json = function () {
   json.scheduledFor = this.scheduledFor;
   json.deliveredOn = this.deliveredOn;
   json.deliveryAddress = this.deliveryAddress;
-  json.paymentStatus = this.paymentStatus;
-  json.paymentMethod = this.paymentMethod;
+  json.payment = this.payment;
   json.items = this.items;
   json.notes = this.notes.slice(-10);
   json.tasks = this.tasks.slice(-10);

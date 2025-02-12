@@ -6,3 +6,4 @@ export * from "./products.service";
 export * from "./notification.service";
 export * from "./reports.service";
 export * from "./geo.service";
+export * from "./message.service";

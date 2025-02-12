@@ -1,0 +1,41 @@
+1️⃣ Account & Profile Management
+registerCustomer: Registers a new customer account.
+updateCustomerProfile: Updates customer details (name, contact info, address).
+getCustomerProfile: Retrieves customer profile information.
+deleteCustomerAccount: Deletes a customer account and associated data.
+2️⃣ Product Discovery & Ordering
+browseProducts: Allows customers to browse available products.
+searchProducts: Searches for products based on name, category, or vendor.
+getProductDetails: Retrieves detailed information about a specific product.
+addToCart: Adds a product to the customer’s cart.
+updateCart: Updates cart items (e.g., change quantity, remove items).
+clearCart: Removes all items from the cart.
+getCart: Retrieves the current cart contents.
+placeOrder: Submits an order for processing.
+3️⃣ Order Management & Tracking
+viewOrders: Retrieves a list of past and active customer orders.
+getOrderDetails: Retrieves full details of a specific order.
+cancelOrder: Allows customers to cancel an order before fulfillment.
+trackOrder: Tracks the current status and location of an active order.
+rateOrder: Submits a rating and review for a completed order.
+4️⃣ Payments & Transactions
+addPaymentMethod: Saves a new payment method (e.g., credit card, digital wallet).
+removePaymentMethod: Removes a saved payment method.
+getPaymentMethods: Retrieves the customer’s saved payment methods.
+processPayment: Processes payment for an order.
+getTransactionHistory: Retrieves a history of payments and refunds.
+5️⃣ Courier & Delivery Tracking
+trackCourierLocation: Allows customers to view the assigned courier’s live location.
+contactCourier: Enables communication with the assigned courier.
+scheduleDelivery: Allows customers to specify a preferred delivery time.
+reportDeliveryIssue: Reports issues related to the delivery (e.g., missing items).
+6️⃣ Notifications & Communication
+getCustomerNotifications: Retrieves notifications related to orders, deliveries, and promotions.
+markNotificationAsRead: Marks notifications as read.
+subscribeToPromotions: Opts in for promotional updates and discounts.
+unsubscribeFromPromotions: Opts out of receiving promotional notifications.
+7️⃣ Support & Feedback
+submitSupportTicket: Allows customers to raise a support request.
+getSupportTickets: Retrieves the customer’s submitted support tickets.
+chatWithSupport: Enables real-time chat with customer support.
+submitFeedback: Allows customers to provide feedback about the platform.

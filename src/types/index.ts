@@ -8,3 +8,4 @@ export * from "./notification";
 export * from "./jpmoney-poker";
 export * from "./message";
 export * from "./chat";
+export * from "./payment.types";

@@ -10,6 +10,7 @@ export enum INotificationTemplates {
   COURIER_ASSIGNED = `You have been assigned order {{orderId}}. Please accept or reject.`,
   COURIER_ASSIGNMENT_CANCELLED = `Order assignment canceled: {{orderId}}`,
 
+  ORDER_PLACED = "Your order #{{orderId}} has been received.",
   ORDER_UPDATE = "Your order #{{orderId}} has been updated.",
   ORDER_COMPLETE = "Thank you for your order, {{name}}! Your order #{{orderNumber}} has been complete.",
   ORDER_CONFIRMATION = "Thank you for your order, {{name}}! Your order #{{orderNumber}} has been confirmed.",

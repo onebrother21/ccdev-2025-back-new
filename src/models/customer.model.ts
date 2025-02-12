@@ -6,6 +6,11 @@ import * as AllTypes from "../types";
 type CustomerModel = Model<AllTypes.ICustomer,{},AllTypes.ICustomerMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
+
+const cartItemSchema = new Schema<any>({
+  item:{type:ObjectId,ref:"products",required:true},
+  qty:{type:Number,required:true},
+},{_id:false,timestamps:false});
 const customerSchema = new Schema<AllTypes.ICustomer,CustomerModel,AllTypes.ICustomerMethods>({
   statusUpdates:getStatusArraySchema(Object.values(AllTypes.IProfileStatuses),AllTypes.IProfileStatuses.NEW),
   name:{type:String,required:true,validate:/^[a-zA-Z\s]{2,20}$/,unique: true, lowercase: true},
@@ -15,6 +20,7 @@ const customerSchema = new Schema<AllTypes.ICustomer,CustomerModel,AllTypes.ICus
   license:{type:getLicenseSchema()},
   location:{type:{type:String,default:"Point"},coordinates:[Number]},
   user:{type:ObjectId,ref:"users",required:true},
+  cart:[cartItemSchema],
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
 customerSchema.plugin(uniqueValidator);
@@ -36,6 +42,7 @@ customerSchema.methods.json = function () {
   json.address = this.address;
   json.license = this.license;
   json.info = this.info;
+  json.cart = this.cart;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
   return json as AllTypes.ICustomer;

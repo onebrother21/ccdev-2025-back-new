@@ -1,0 +1,65 @@
+Business Management
+registerBusiness: Registers a new business entity in the system.
+updateBusinessProfile: Updates business details like name, industry, and contact information.
+getBusinessProfile: Retrieves business profile details.
+deleteBusinessAccount: Permanently deletes a business account and associated data.
+verifyBusiness: Submits required documents for business verification.
+🔹 Financial Management
+processPayout: Initiates a payout to a vendor’s bank or wallet.
+getPayoutHistory: Retrieves a history of completed and pending payouts.
+updateBankDetails: Updates the bank account details for receiving payouts.
+setTaxInformation: Adds or updates tax-related information for the business.
+🔹 Order & Fulfillment Oversight
+viewBusinessOrders: Retrieves all orders across multiple vendors under the business.
+updateOrderFulfillmentPolicy:
+
+
+
+
+
+You said:
+cancel
+ChatGPT said:
+Got it, let me know what you’d like to do next! 🚀
+
+
+
+
+
+
+You said:
+Write a structured list of possible business admin operations based on my app's workflows and past discussions.
+ChatGPT said:
+Structured List of Business Admin Operations
+This list focuses on business administrators' capabilities within the app, covering user management, vendor oversight, financial control, analytics, system settings, and compliance.
+
+🔹 User & Vendor Management
+approveVendor: Reviews and approves vendor applications.
+suspendVendor: Temporarily suspends a vendor due to policy violations or inactivity.
+deleteVendor: Permanently removes a vendor and associated data.
+manageBusinessUsers: Adds, updates, or removes users with administrative roles.
+setUserPermissions: Assigns and updates role-based access permissions.
+🔹 Financial Control
+reviewPayoutRequests: Approves or denies vendor payout requests.
+adjustVendorCommission: Updates the commission percentage taken from vendor sales.
+generateRevenueReports: Retrieves revenue breakdowns for the business platform.
+trackBusinessExpenses: Logs and tracks operational expenses.
+🔹 Order & Fulfillment Oversight
+monitorOrderActivity: Provides real-time monitoring of order statuses and fulfillment.
+resolveOrderDisputes: Manages customer/vendor disputes and issues refunds when necessary.
+enforceDeliverySLAs: Ensures couriers meet service-level agreements for delivery times.
+🔹 Analytics & Insights
+analyzeSalesPerformance: Tracks sales trends and performance across vendors.
+getCustomerBehaviorReports: Provides insights into customer buying patterns.
+monitorVendorPerformance: Assesses vendor activity, ratings, and compliance.
+generateOperationalReports: Creates detailed reports on business operations.
+🔹 System Settings & Policies
+updatePlatformPolicies: Modifies terms of service, refund policies, and vendor agreements.
+configureBusinessSettings: Adjusts settings like tax rates, currency, and regional availability.
+managePromotions: Creates and manages platform-wide promotions or seasonal discounts.
+handleSecurityIncidents: Logs and responds to security threats or data breaches.
+🔹 Compliance & Support
+auditVendorCompliance: Ensures vendors comply with business and legal regulations.
+reviewCustomerComplaints: Addresses escalated customer complaints and takes action.
+manageSupportTickets: Handles inquiries from vendors, couriers, and customers.
+This list captures the core functions of business administrators within your platform. Let me know what you'd like to implement first! 🚀

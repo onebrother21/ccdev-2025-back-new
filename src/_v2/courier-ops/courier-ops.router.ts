@@ -1,47 +1,48 @@
 import { Router } from 'express';
-import { CourierOpsController } from './courier-ops.controller';
-import { CourierOpsValidators } from './courier-ops.validators';
+import { CourierOpsController as ctrl } from './courier-ops.controller';
+import { CourierOpsValidators as validators } from './courier-ops.validators';
 import { AuthJWT } from '../../middlewares';
-import { Routes } from '../v2-routerstrings';
+import { V2Routes } from '../v2-routerstrings';
 
-const CourierOpsRouter = Router();
+const routes = V2Routes.CourierOps;
+const router = Router();
 
 // Apply authentication middleware to all routes
-CourierOpsRouter.use(AuthJWT);
+router.use(AuthJWT);
 
 // 📌 Courier Management
-CourierOpsRouter.post(Routes.CourierOps.courier.register, CourierOpsValidators.registerCourier, CourierOpsController.registerCourier);
-CourierOpsRouter.put(Routes.CourierOps.courier.updateProfile, CourierOpsValidators.updateCourierProfile, CourierOpsController.updateCourierProfile);
-CourierOpsRouter.get(Routes.CourierOps.courier.getProfile, CourierOpsController.getCourierProfile);
-CourierOpsRouter.delete(Routes.CourierOps.courier.deleteAccount, CourierOpsController.deleteCourierProfile);
-CourierOpsRouter.delete(Routes.CourierOps.courier.deleteAccount+"/x", CourierOpsController.deleteXCourierProfile);
+router.post(routes.courier.register, validators.registerCourier, ctrl.registerCourier);
+router.put(routes.courier.updateProfile, validators.updateCourierProfile, ctrl.updateCourierProfile);
+router.get(routes.courier.getProfile, ctrl.getCourierProfile);
+router.delete(routes.courier.deleteAccount, ctrl.deleteCourierProfile);
+router.delete(routes.courier.deleteAccount+"/x", ctrl.deleteXCourierProfile);
 
 // 📌 Order & Fulfillment
-CourierOpsRouter.get(Routes.CourierOps.order.list, CourierOpsController.viewOrders);
-CourierOpsRouter.post(Routes.CourierOps.order.accept, CourierOpsValidators.acceptOrder, CourierOpsController.acceptOrder);
-CourierOpsRouter.post(Routes.CourierOps.order.reject, CourierOpsValidators.rejectOrder, CourierOpsController.rejectOrder);
-CourierOpsRouter.post(Routes.CourierOps.order.markAsPickedUp, CourierOpsValidators.markOrderPickedUp, CourierOpsController.markOrderPickedUp);
-CourierOpsRouter.post(Routes.CourierOps.order.markAsDelivered, CourierOpsValidators.markOrderDelivered, CourierOpsController.markOrderDelivered);
-CourierOpsRouter.get(Routes.CourierOps.order.details, CourierOpsController.viewOrderDetails);
-CourierOpsRouter.put(Routes.CourierOps.order.updateStatus, CourierOpsValidators.updateOrderStatus, CourierOpsController.updateOrderStatus);
+router.get(routes.order.list, ctrl.viewOrders);
+router.post(routes.order.accept, validators.acceptOrder, ctrl.acceptOrder);
+router.post(routes.order.reject, validators.rejectOrder, ctrl.rejectOrder);
+router.post(routes.order.markAsPickedUp, validators.markOrderPickedUp, ctrl.markOrderPickedUp);
+router.post(routes.order.markAsDelivered, validators.markOrderDelivered, ctrl.markOrderDelivered);
+router.get(routes.order.details, ctrl.viewOrderDetails);
+router.put(routes.order.updateStatus, validators.updateOrderStatus, ctrl.updateOrderStatus);
 
 // 📌 Route Navigation & Tracking
-CourierOpsRouter.post(Routes.CourierOps.navigation.getRoute, CourierOpsValidators.getDeliveryRoute, CourierOpsController.getDeliveryRoute);
-CourierOpsRouter.get(Routes.CourierOps.navigation.updateLoc,CourierOpsValidators.updateCourierProfile,CourierOpsController.updateCourierLocation);
-CourierOpsRouter.get(Routes.CourierOps.navigation.trackLoc,CourierOpsValidators.trackCourierLocation,CourierOpsController.trackCourierLocation);
+router.post(routes.navigation.getRoute, validators.getDeliveryRoute, ctrl.getDeliveryRoute);
+router.get(routes.navigation.updateLoc,validators.updateCourierProfile,ctrl.updateCourierLocation);
+router.get(routes.navigation.trackLoc,validators.trackCourierLocation,ctrl.trackCourierLocation);
 
 // 📌 Notifications & Communication
-CourierOpsRouter.post(Routes.CourierOps.notifications.orderUpdate, CourierOpsController.sendOrderUpdateNotification);
-CourierOpsRouter.get(Routes.CourierOps.notifications.list, CourierOpsController.viewCourierNotifications);
+router.post(routes.notifications.orderUpdate, ctrl.sendOrderUpdateNotification);
+router.get(routes.notifications.list, ctrl.viewCourierNotifications);
 
 // 📌 Analytics & Reporting
-CourierOpsRouter.get(Routes.CourierOps.analytics.earningsReport, CourierOpsController.getEarningsReport);
-CourierOpsRouter.get(Routes.CourierOps.analytics.deliveryStats, CourierOpsController.getOrderDeliveryStats);
-CourierOpsRouter.get(Routes.CourierOps.analytics.customerRatings, CourierOpsController.getCustomerRatings);
+router.get(routes.analytics.earningsReport, ctrl.getEarningsReport);
+router.get(routes.analytics.deliveryStats, ctrl.getOrderDeliveryStats);
+router.get(routes.analytics.customerRatings, ctrl.getCustomerRatings);
 
 // 📌 Settings & Preferences
-CourierOpsRouter.put(Routes.CourierOps.settings.businessHours, CourierOpsController.updateBusinessHours);
-CourierOpsRouter.put(Routes.CourierOps.settings.autoAccept, CourierOpsController.setAutoAcceptOrders);
-CourierOpsRouter.put(Routes.CourierOps.settings.courierPrefs, CourierOpsController.setCourierPreferences);
+router.put(routes.settings.businessHours, ctrl.updateBusinessHours);
+router.put(routes.settings.autoAccept, ctrl.setAutoAcceptOrders);
+router.put(routes.settings.courierPrefs, ctrl.setCourierPreferences);
 
-export default CourierOpsRouter;
+export default router;

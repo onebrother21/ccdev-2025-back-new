@@ -64,6 +64,7 @@ export type ICustomerType = {
   license:ILicenseInfo;
   status:IProfileStatuses; 
   statusUpdates:Status<IProfileStatuses>[];
+  cart:{item:Products.IProduct,qty:number}[];
   info:any;
 };
 export interface ICustomerMethods {
