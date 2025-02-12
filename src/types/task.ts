@@ -13,16 +13,11 @@ export enum ITaskStatuses {
   PROCESSED = "processing",
   IN_PROGRESS = "in-progress"
 }
-export interface ITaskMethods {
-  setStatus(name:ITaskStatuses,info?:any,save?:boolean):Promise<void>;
-  preview():Pick<ITask,"id"|"name"|"category"|"type"|"description"|"status">;
-  json():Partial<ITask>;
-}
-export interface ITask extends ITaskMethods,Document {
+export type ITaskType = {
   creator:Profiles.IAdmin;
   createdOn:Date;
   updatedOn:Date;
-  status_activity:Status<ITaskStatuses>[]; 
+  statusUpdates:Status<ITaskStatuses>[]; 
   status:ITaskStatuses; 
   dueOn:Date;
   category:string;
@@ -37,4 +32,11 @@ export interface ITask extends ITaskMethods,Document {
   notes:Notes.INote[];
   resolution?:string;
   reason?:string;
+  info:any;
+};
+export interface ITaskMethods {
+  setStatus(name:ITaskStatuses,info?:any,save?:boolean):Promise<void>;
+  preview():Pick<ITask,"id"|"name"|"category"|"type"|"description"|"status">;
+  json():Partial<ITask>;
 }
+export interface ITask extends ITaskType,ITaskMethods,Document {}

@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models';
+import { logger } from '../utils';
 
 const jwtSecret = process.env.JWT_KEY || "";
 const auth:IHandler = async (req,res,next) => {
@@ -9,13 +10,14 @@ const auth:IHandler = async (req,res,next) => {
     const parts = isTokenStr?header.split("Bearer "):[];
     const token = parts[1];
     if(token){
-      const decoded = jwt.verify(token,jwtSecret) as IAppCreds;
+      const decoded = jwt.verify(token,jwtSecret) as IAppCreds & {expires:string|number|Date};
       const user = await User.findById(decoded.id);
       await user.populate(`profiles.${decoded.role}`);
+      res.locals.tokenExp = decoded.expires;
       req.user = user;
       req.user.role = decoded.role;
+      req.profile = user.profiles[decoded.role];
       req.token = token;
-      console.log(user)
       next();
     }
     else res.status(401).send({success: false,message: 'Unauthorized'});

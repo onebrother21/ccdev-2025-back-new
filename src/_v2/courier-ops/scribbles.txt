@@ -1,0 +1,25 @@
+//Courier Profile & Availability
+registerCourier: Registers a new courier.
+updateCourierProfile: Updates courier profile details.
+getCourierProfile: Retrieves courier profile details.
+deleteCourierAccount: Deletes a courier’s account.
+deleteCourierXAccount: Deletes a courier’s account.
+setCourierAvailability: Marks the courier as available/unavailable for delivery.
+//Order & Delivery Management
+viewAssignedOrders: Retrieves all orders currently assigned to the courier.
+acceptOrderAssignment: Accepts a courier assignment for an order.
+rejectOrderAssignment: Rejects an order assignment.
+markOrderPickedUp: Marks an order as picked up from the vendor.
+markOrderDelivered: Marks an order as successfully delivered.
+updateOrderStatus: Updates the status of a delivery in progress.
+//Navigation & Tracking
+getDeliveryRoute: Retrieves the optimal route from the vendor to the customer.
+updateCourierLocation: Updates the courier’s real-time location.
+trackCourierLocation: Retrieves a courier’s current location (for customers/vendors).
+//Earnings & Analytics
+getEarningsReport: Retrieves courier earnings over a specified period.
+getOrderDeliveryStats: Analyzes delivery times and success rates.
+getCustomerRatings: Retrieves customer ratings and feedback for the courier.
+//Notifications & Communication
+viewCourierNotifications: Retrieves notifications related to new orders and system messages.
+sendStatusUpdateNotification: Sends a status update notification to vendors/customers.

@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
-import * as AllTypes from "../types";
 import CommonUtils from './common-utils';
 import { stateAbbreviations } from './constants';
+import * as AllTypes from "../types";
 
 const ObjectId = Schema.Types.ObjectId;
 const statusSchema = new Schema({
@@ -29,27 +29,21 @@ const getStatusArraySchema = <K extends string>(statuses:K[],defaultVal?:K) => {
     default:() => statuses.length?[{name:defaultVal || statuses[0],time:new Date()}]:[]
   };
 };
-const getNoteSchema = () => {
-  return new Schema<AllTypes.INote>({
-    user:{ type:ObjectId,refPath:"userRef",required:true },
-    userRef:{ type:String,enum:Object.values(AllTypes.IProfileTypes),required:true },
-    msg: { type: String,required:true},
-    time: { type: Date,default:() => new Date()},
-    slug: { type: String,default:() => CommonUtils.shortId()},
-  },{_id:false,timestamps:false});
-};
-const getNoteArraySchema = () => {
-  return {
-    type:[
-      new Schema<AllTypes.INote>({
-        user:{ type:ObjectId,ref:"users",required:true },
-        msg: { type: String,required:true},
-        time: { type: Date,default:() => new Date()},
-        slug: { type: String,default:() => CommonUtils.shortId()},
-      },{_id:false,timestamps:false})
-    ],
-    default:() => []
-  };
+const noteSchema = new Schema<AllTypes.INote>({
+  user:{ type:ObjectId,refPath:"userRef",required:true },
+  userRef:{ type:String,enum:Object.values(AllTypes.IProfileTypes),required:true },
+  msg: { type: String,required:true},
+  time: { type: Date,default:() => new Date()},
+  slug: { type: String,default:() => CommonUtils.shortId()},
+},{_id:false,timestamps:false});
+
+noteSchema.methods.json = function () {
+  const json:Partial<AllTypes.INote> =  {};
+  json.user = this.user.preview() as any;
+  json.msg = this.msg;
+  json.time = this.time;
+  json.slug = this.slug;
+  return json as AllTypes.INote;
 };
 
 const getAddressSchema = () => {
@@ -69,5 +63,5 @@ const getLicenseSchema = () => {
   },{_id:false,timestamps:false});
 }
 
-export { statusSchema,getStatusSchema,getStatusArraySchema,getNoteArraySchema,getAddressSchema,getLicenseSchema };
+export { statusSchema,getStatusSchema,getStatusArraySchema,noteSchema,getAddressSchema,getLicenseSchema };
 

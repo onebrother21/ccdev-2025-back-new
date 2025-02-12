@@ -36,7 +36,7 @@ export type IPokerPlanType = {
   motto?:string
   bio?:string
   desc?:string
-  status_activity:Status<IPokerPlanStatuses>[]; 
+  statusUpdates:Status<IPokerPlanStatuses>[]; 
   status:IPokerPlanStatuses; 
   startDate:Date
   startBal:number
@@ -50,7 +50,8 @@ export type IPokerPlanType = {
     expHitRate:number
     expReturn:number
     stdError:number
-  }
+  };
+  info:any;
 };
 export interface IPokerPlanMethods {
   setStatus(name:IPokerPlanStatuses,info?:any,save?:boolean):Promise<void>;

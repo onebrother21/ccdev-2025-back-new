@@ -1,13 +1,13 @@
 import mongoose,{Schema,Model} from 'mongoose';
-import { getStatusArraySchema, getNoteArraySchema } from "../utils";
+import uniqueValidator from "mongoose-unique-validator";
+import { getStatusArraySchema, noteSchema } from "../utils";
 import * as AllTypes from "../types";
 
 type TaskModel = Model<AllTypes.ITask,{},AllTypes.ITaskMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
 const taskSchema = new Schema<AllTypes.ITask,TaskModel,AllTypes.ITaskMethods>({
-  status_activity:getStatusArraySchema(Object.values(AllTypes.ITaskStatuses),AllTypes.ITaskStatuses.NEW),
-  status:{type:String,default:AllTypes.ITaskStatuses.NEW},
+  statusUpdates:getStatusArraySchema(Object.values(AllTypes.ITaskStatuses),AllTypes.ITaskStatuses.NEW),
   creator:{type:ObjectId,ref:"users",required:true},
   category: { type: String,required:true},
   type: { type: String,required:true},
@@ -21,13 +21,16 @@ const taskSchema = new Schema<AllTypes.ITask,TaskModel,AllTypes.ITaskMethods>({
   resolution:{ type: String,maxlength:140},
   reason:{ type: String},
   tasks:[{type:ObjectId,ref:"tasks"}],
-  notes:getNoteArraySchema(),
+  notes:[noteSchema],
+  info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
-
+taskSchema.plugin(uniqueValidator);
+taskSchema.virtual('status').get(function () {
+  return this.statusUpdates[this.statusUpdates.length - 1].name;
+});
 taskSchema.methods.setStatus = async function (name,info,save){
   const status = {name,time:new Date(),...(info?{info}:{})};
-  this.status_activity.push(status);
-  this.status = status.name;
+  this.statusUpdates.push(status);
   if(save) await this.save();
 };
 taskSchema.methods.preview = function () {
@@ -52,17 +55,13 @@ taskSchema.methods.json = function () {
   json.recurringInterval = this.recurringInterval;
   json.amt = this.amt;
   json.tasks = this.tasks.map(o => o.preview() as AllTypes.ITask);
-  json.notes = this.notes.map(o => ({
-    slug:o.slug,
-    msg:o.msg,
-    user:o.user.json(),
-    time:o.time
-  })) as AllTypes.INote[];
+  json.notes = this.notes.map(o => o.json()) as AllTypes.INote[];
   json.status = this.status;
   json.progress = this.progress;
   json.resolution = this.resolution;
   json.reason = this.reason;
   json.dueOn = this.dueOn;
+  json.info = this.info;
   json.createdOn = this.createdOn;
   return json as AllTypes.ITask;
 };

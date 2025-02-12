@@ -22,7 +22,7 @@ const SetCsrfToken:IHandler = async (req, res, next) => {
   const csrfToken = doubleCsrfUtils.generateToken(req,res);
   res.locals.csrfToken = csrfToken;
   res.cookie('XSRF-TOKEN',csrfToken,{
-    sameSite: false,
+    sameSite: true,
     path: '/',
     secure: process.env.NODE_ENV === 'production',
   });

@@ -24,33 +24,6 @@
     "importHelpers": true,
     "baseUrl": "./src",
     "paths": {
-      "@controllers/*": [
-        "mvc/controllers"
-      ],
-      "@interfaces/*": [
-        "interfaces/*"
-      ],
-      "@mvc/*": [
-        "mvc/*"
-      ],
-      "@middlewares/*": [
-        "middlewares/*"
-      ],
-      "@models/*": [
-        "mvc/models"
-      ],
-      "@routes": [
-        "mvc/routes/index.ts"
-      ],
-      "@routes/*": [
-        "mvc/routes/*"
-      ],
-      "@services/*": [
-        "services/*"
-      ],
-      "@helpers/*": [
-        "helpers/*"
-      ]
     }
   },
   "exclude": [

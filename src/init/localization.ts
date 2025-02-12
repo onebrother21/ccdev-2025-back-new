@@ -3,6 +3,7 @@ import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import * as i18nextMiddleware from 'i18next-http-middleware';
 import path from 'path';
+import { logger } from '../utils';
 
 const i18nextconfig = {
   backend: {
@@ -21,7 +22,7 @@ export default function (app:Express) {
   .use(i18nextMiddleware.LanguageDetector)
   .init(i18nextconfig,(err, t) => {
     if (err) return console.log('something went wrong loading', err);
-    console.log("⚡️ [i18next]:Localization set",t('api.ready')); 
+    logger.print("i18next","Localization set",t('api.ready')); 
   });
   app.use(i18nextMiddleware.handle(i18next,{}));
 }

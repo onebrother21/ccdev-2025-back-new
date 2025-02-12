@@ -29,3 +29,8 @@ export {
   PageNotFound,
   ErrorHandler,
 };
+export const PostMiddleware = [
+  EncryptData,
+  SetUserSession,
+  SendJson,
+];

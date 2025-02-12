@@ -1,5 +1,6 @@
 import { Document } from "mongoose";
-import * as Users from "./user";
+import * as User from "./user";
+import * as Products from "./products";
 
 
 export enum IProfileTypes {
@@ -7,6 +8,15 @@ export enum IProfileTypes {
   COURIER = "courier",
   CUSTOMER = "customer",
   VENDOR = "vendor",
+}
+export enum IProfileStatuses {
+  NEW = "new",
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  DISABLED = "disabled",
+  ENABLED = "enabled",
+  LOCKED = "locked",
+  DELETED = "deleted"
 }
 export enum IApprovalStatuses {
   REQUESTED = "requested",
@@ -39,65 +49,109 @@ export type IInsuranceInfo = {
   insurer:string;
   vehicle:string
 };
-export interface ICustomerMethods {
-  json():Partial<ICustomer>;
-}
-export interface ICustomer extends ICustomerMethods,Document{
+
+
+/** Hashdash Customer Profile */
+export type ICustomerType = {
+  user:User.IUser;
   name:string;
   displayName?:string;
   img?:string;
   bio?:string;
   title?:string;
+  location:{type:"Point",coordinates:[number,number]};
   address:AddressObj;
   license:ILicenseInfo;
-  user:Users.IUser;
+  status:IProfileStatuses; 
+  statusUpdates:Status<IProfileStatuses>[];
+  info:any;
+};
+export interface ICustomerMethods {
+  setStatus(name:IProfileStatuses,info?:any,save?:boolean):Promise<void>;
+  json():Partial<ICustomer>;
 }
+export interface ICustomer extends ICustomerType,ICustomerMethods,Document{}
+
+/** Hashdash Vendor Profile */
+export type IVendorType = {
+  mgr:User.IUser;
+  users:User.IUser[];
+  name:string;
+  email:string;
+  phone:string;
+  hours:{open:string,close:string};
+  address:AddressObj;
+  location:{type:"Point",coordinates:[number,number]};
+  status:IProfileStatuses; 
+  statusUpdates:Status<IProfileStatuses>[];
+  approval:IApprovalStatuses;
+  approvalUpdates:Status<IApprovalStatuses>[]; 
+  items:{
+    qty:number;
+    item:Products.IProduct,
+    receivedOn:Date; // Date the product was received
+  }[];
+  displayName?:string;
+  img?:string;
+  bio?:string;
+  title?:string;
+  license?:ILicenseInfo;
+  info:any;
+};
 export interface IVendorMethods {
+  setStatus(name:IProfileStatuses,info?:any,save?:boolean):Promise<void>;
   setApproval(name:IApprovalStatuses,info?:any,save?:boolean):Promise<void>;
   json():Partial<IVendor>;
 }
-export interface IVendor extends IVendorMethods,Document {
+export interface IVendor extends IVendorType,IVendorMethods,Document {}
+
+
+/** Hashdash Courier Profile */
+export type ICourierType = {
+  user:User.IUser;
   name:string;
   displayName?:string;
   img?:string;
   bio?:string;
   title?:string;
-  address:AddressObj;
-  license:ILicenseInfo;
-  approval_activity:Status<IApprovalStatuses>[]; 
-  approval:IApprovalStatuses; 
-  user:Users.IUser;
-}
-export interface ICourierMethods {
-  setApproval(name:IApprovalStatuses,info?:any,save?:boolean):Promise<void>;
-  json():Partial<ICourier>;
-}
-export interface ICourier extends ICourierMethods,Document {
-  name:string;
-  displayName?:string;
-  img?:string;
-  bio?:string;
-  title?:string;
+  isAvailable:boolean;
+  location:{type:"Point",coordinates:[number,number]};
   vehicle:IVehicle;
   license:ILicenseInfo;
   insurance:any;
-  approval_activity:Status<IApprovalStatuses>[]; 
-  approval:IApprovalStatuses; 
-  user:Users.IUser;
-}
-
-export interface IAdminMethods {
+  status:IProfileStatuses; 
+  statusUpdates:Status<IProfileStatuses>[];
+  approvalUpdates:Status<IApprovalStatuses>[]; 
+  approval:IApprovalStatuses;
+  info:any;
+};
+export interface ICourierMethods {
+  setStatus(name:IProfileStatuses,info?:any,save?:boolean):Promise<void>;
   setApproval(name:IApprovalStatuses,info?:any,save?:boolean):Promise<void>;
-  json():Partial<IAdmin>;
+  json():Partial<ICourier>;
 }
-export interface IAdmin extends IAdminMethods,Document {
+export interface ICourier extends ICourierType,ICourierMethods,Document {}
+
+
+/** Hashdash Admin Profile */
+export type IAdminType = { 
+  user:User.IUser;
   name:string;
   displayName?:string;
   img?:string;
   bio?:string;
   title?:string;
   scopes:string[];
-  approval_activity:Status<IApprovalStatuses>[]; 
-  approval:IApprovalStatuses; 
-  user:Users.IUser;
+  location:{type:"Point",coordinates:[number,number]};
+  status:IProfileStatuses; 
+  statusUpdates:Status<IProfileStatuses>[];
+  approvalUpdates:Status<IApprovalStatuses>[]; 
+  approval:IApprovalStatuses;
+  info:any;
+};
+export interface IAdminMethods {
+  setStatus(name:IProfileStatuses,info?:any,save?:boolean):Promise<void>;
+  setApproval(name:IApprovalStatuses,info?:any,save?:boolean):Promise<void>;
+  json():Partial<IAdmin>;
 }
+export interface IAdmin extends IAdminType,IAdminMethods,Document {}

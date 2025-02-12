@@ -9,17 +9,19 @@ export enum IChatStatuses {
   LOCKED = "locked",
   DELETED = "deleted",
 }
-export interface IChatMethods {
-  setStatus(name:IChatStatuses,info?:any,save?:boolean):Promise<void>;
-  json():Partial<IChat>;
-}
-export interface IChat extends IChatMethods,Document {
+export type IChatType = {
   type:"user-chat"|"service-chat";
-  status_activity:Status<IChatStatuses>[]; 
+  statusUpdates:Status<IChatStatuses>[]; 
   status:IChatStatuses; 
   participants:(Profiles.ICustomer|Profiles.IVendor|Profiles.ICourier|Profiles.IAdmin)[];
   participantRefs:`${Profiles.IProfileTypes}s`[];
   messages: Messages.IMessage[];
   lastMessage?: Messages.IMessage;
   lastViewed?:Date;
+  info:any;
+};
+export interface IChatMethods {
+  setStatus(name:IChatStatuses,info?:any,save?:boolean):Promise<void>;
+  json():Partial<IChat>;
 }
+export interface IChat extends IChatType,IChatMethods,Document {}

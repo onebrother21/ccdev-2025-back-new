@@ -1,5 +1,6 @@
 import mongoose,{Schema,Model} from 'mongoose';
-import { getNoteArraySchema, getStatusArraySchema, getStatusSchema,stateAbbreviations, stateSalesTaxRates } from '../utils';
+import uniqueValidator from "mongoose-unique-validator";
+import { noteSchema, getStatusArraySchema, getStatusSchema,stateAbbreviations, stateSalesTaxRates } from '../utils';
 import * as AllTypes from "../types";
 
 type OrderModel = Model<AllTypes.IOrder,{},AllTypes.IOrderMethods>;
@@ -29,8 +30,8 @@ const chargesSchema = new Schema<AllTypes.IOrderCharges>({
 },{_id:false,timestamps:false});
 
 const orderSchema = new Schema<AllTypes.IOrder,OrderModel,AllTypes.IOrderMethods>({
-  status_activity:getStatusArraySchema(Object.values(AllTypes.IOrderStatuses),AllTypes.IOrderStatuses.NEW),
-  status:{type:String,default:AllTypes.IOrderStatuses.NEW},
+  reqno:{type:Number,required:true},
+  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IOrderStatuses),AllTypes.IOrderStatuses.NEW),
   customer:{type:ObjectId,ref:"customers",required:true},
   vendor:{type:ObjectId,ref:"vendors",required:true},
   courier:{type:ObjectId,ref:"couriers"},
@@ -52,13 +53,17 @@ const orderSchema = new Schema<AllTypes.IOrder,OrderModel,AllTypes.IOrderMethods
     total:0
   })},
   tasks:[{type:ObjectId,ref:"tasks"}],
-  notes:getNoteArraySchema(),
-  activity:{type:[Object]}
+  notes:[noteSchema],
+  activity:{type:[Object]},
+  info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
-
+orderSchema.plugin(uniqueValidator);
+orderSchema.virtual('status').get(function () {
+  return this.statusUpdates[this.statusUpdates.length - 1].name;
+});
 orderSchema.methods.setStatus = async function (name,info,save){
   const status = {name,time:new Date(),...(info?{info}:{})};
-  this.status_activity.push(status);
+  this.statusUpdates.push(status);
   this.status = status.name;
   if(save) await this.save();
 };
@@ -104,6 +109,7 @@ orderSchema.methods.json = function () {
   json.notes = this.notes.slice(-10);
   json.tasks = this.tasks.slice(-10);
   json.charges = this.charges;
+  json.info = this.info;
   json.createdOn = this.createdOn;
   return json as AllTypes.IOrder;
 };

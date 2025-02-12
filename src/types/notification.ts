@@ -4,11 +4,19 @@ import * as Profiles from "./profiles";
 
 export enum INotificationTemplates {
   REGISTER = "Welcome {{name}}, thank you for registering with us!",
-  VERIFY = "Hello {{name}}, please verify your email by clicking this link: {{verificationLink}}",
+  VERIFY = "Hello and thank you for choosing HashDash. Your verification code is {{code}} and it expires in 15 minutes.",
   UNRECOGNIZED_LOGIN = "Hey {{name}}, we noticed an unrecognized login from a new device. If this wasn't you, please secure your account.",
-  RESET_PASSWORD = "Hi {{name}}, click here to reset your password: {{resetLink}}",
+
+  COURIER_ASSIGNED = `You have been assigned order {{orderId}}. Please accept or reject.`,
+  COURIER_ASSIGNMENT_CANCELLED = `Order assignment canceled: {{orderId}}`,
+
+  ORDER_UPDATE = "Your order #{{orderId}} has been updated.",
+  ORDER_COMPLETE = "Thank you for your order, {{name}}! Your order #{{orderNumber}} has been complete.",
   ORDER_CONFIRMATION = "Thank you for your order, {{name}}! Your order #{{orderNumber}} has been confirmed.",
-  ORDER_SHIPPED = "Good news, {{name}}! Your order #{{orderNumber}} has been shipped and is on its way.",
+
+  RESET_PASSWORD = "Hi {{name}}, click here to reset your password: {{resetLink}}",
+  RESET_PASSWORD_SUCCESS = "Your password has been updated. If you did not request this change, click here.",
+  ORDER_OUT_FOR_DELIVERY = "Good news, {{name}}! Your order #{{orderNumber}} has been picked up and is on its way.",
   PAYMENT_SUCCESS = "Hi {{name}}, your payment of {{amount}} was successfully processed. Thank you for shopping with us!",
   PAYMENT_FAILED = "Oops, {{name}}. Your payment of {{amount}} could not be processed. Please check your payment details.",
   NEW_MESSAGE = "You have a new message from {{senderName}}: {{message}}",
@@ -26,6 +34,7 @@ export enum INotificationStatuses {
   NEW = "new",
   SENDING = "sending",
   SENT = "sent",
+  SENT_SOME = "sent-some",
   FAILED = "failed",
 }
 export enum INotificationSendMethods {
@@ -35,23 +44,23 @@ export enum INotificationSendMethods {
   IN_APP = "in-app",
   AUTO = "auto",
 }
-export interface INotificationMethods {
-  setStatus(name:INotificationStatuses,info?:any,save?:boolean):Promise<void>;
-  preview():Pick<INotification,"id"|"type"|"method"|"job"|"status"|"createdOn">;
-  json():Partial<INotification>;
-}
-export interface INotification extends Document {
-  creator:Profiles.IAdmin;
-  creatorRef:`${Profiles.IProfileTypes}s`;
+export type INotificationType = {
   type:keyof typeof INotificationTemplates;
   method:INotificationSendMethods;
   audience:Users.IUser[];
-  status_activity:Status<INotificationStatuses>[]; 
-  status:INotificationStatuses; 
   data: Record<string, any>; // Replaceable data for personalization
+  statusUpdates:Status<INotificationStatuses>[]; 
+  status:INotificationStatuses; 
   job: string;
   meta: any;
   retries:number;
-  createdOn:Date;
-  updatedOn:Date;
+  info:any;
+};
+export type INotificationInit = Pick<INotificationType,"type"|"method"|"audience"|"data">;
+
+export interface INotificationMethods {
+  setStatus(name:INotificationStatuses,info?:any,save?:boolean):Promise<void>;
+  preview():Pick<INotification,"id"|"type"|"method"|"job"|"status">;
+  json():Partial<INotification>;
 }
+export interface INotification extends INotificationType,INotificationMethods,Document {}

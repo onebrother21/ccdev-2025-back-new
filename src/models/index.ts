@@ -11,5 +11,6 @@ import BusinessVars from './bvars.model';
 import Notification from './notification.model';
 import Message from './message.model';
 import Chat from './chat.model';
+import AuthToken,{DeadToken} from "./auth-token.model";
 
-export { User,Courier,Customer,Vendor,Admin,Product,Order,Task,PokerPlan,BusinessVars,Notification,Message,Chat };
+export { User,Courier,Customer,Vendor,Admin,Product,Order,Task,PokerPlan,BusinessVars,Notification,Message,Chat,AuthToken,DeadToken };

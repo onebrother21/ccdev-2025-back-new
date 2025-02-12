@@ -1,6 +1,6 @@
 interface IRequest extends Request_ {
-  userId:string;
   user:IAppCreds;
+  profile:any;
   token:string;
   session:any;
   bvars:any;

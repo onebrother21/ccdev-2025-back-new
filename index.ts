@@ -1,3 +1,4 @@
+import { AppError } from "utils";
 import MyServer from "./src";
 
 module.exports = (async () => {

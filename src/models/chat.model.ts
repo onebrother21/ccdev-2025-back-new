@@ -1,4 +1,5 @@
 import mongoose,{Schema,Model} from 'mongoose';
+import uniqueValidator from "mongoose-unique-validator";
 import * as AllTypes from "../types";
 import { getStatusArraySchema } from '../utils';
 
@@ -6,8 +7,7 @@ type ChatModel = Model<AllTypes.IChat,{},AllTypes.IChatMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
 const chatSchema = new Schema<AllTypes.IChat,ChatModel,AllTypes.IChatMethods>({
-  status_activity:getStatusArraySchema(Object.values(AllTypes.IChatStatuses),AllTypes.IChatStatuses.ACTIVE),
-  status:{type:String,default:AllTypes.IChatStatuses.ACTIVE},
+  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IChatStatuses),AllTypes.IChatStatuses.ACTIVE),
   type: {
     type: String,
     enum:["user-chat","service-chat"],
@@ -17,11 +17,15 @@ const chatSchema = new Schema<AllTypes.IChat,ChatModel,AllTypes.IChatMethods>({
   participantRefs: [{ type: String, required: true, enum: Object.values(AllTypes.IProfileTypes) }],
   messages: [{ type: ObjectId, ref: 'messages' }],
   lastMessage: { type: ObjectId, ref: 'messages' },
+  info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
-
+chatSchema.plugin(uniqueValidator);
+chatSchema.virtual('status').get(function () {
+  return this.statusUpdates[this.statusUpdates.length - 1].name;
+});
 chatSchema.methods.setStatus = async function (name,info,save){
   const status = {name,time:new Date(),...(info?{info}:{})};
-  this.status_activity.push(status);
+  this.statusUpdates.push(status);
   this.status = status.name;
   if(save) await this.save();
 };
@@ -34,6 +38,7 @@ chatSchema.methods.json = function () {
   json.messages = this.messages.map(o => o.json() as any);
   json.lastMessage = this.lastMessage.json() as any;
   json.status = this.status;
+  json.info = this.info;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
   return json as AllTypes.IChat;

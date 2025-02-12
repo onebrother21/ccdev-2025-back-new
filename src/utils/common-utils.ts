@@ -6,6 +6,15 @@ const supersecret = process.env.ENCRYPTION_KEY || "";
 const overwriteMerge = (destinationArray:any[], sourceArray:any[], options:any) => sourceArray;
 
 export class CommonUtils {
+  static pkg = ():string => process.env["npm_package_name"];
+  static app = ():string => /@/.test(CommonUtils.pkg())?CommonUtils.pkg().split("/")[1]:CommonUtils.pkg();
+  static varPrefix = ():string => (CommonUtils.app().toLocaleUpperCase()).replace(/-/g,"_");
+  static var = (str:string):any => CommonUtils.parse(process.env[CommonUtils.varPrefix() + str]);
+  static env = ():string => process.env["NODE_ENV"];
+  static mode = ():string => process.env["NODE_MODE"];
+  static version = ():string => process.env["npm_package_version"];
+  static stringify = (o:object) => JSON.stringify(o);
+  static parse = (k:string) => {try {return JSON.parse(k);} catch(e){return k;}};
   static isProd = (o = false):o is boolean => process.env.NODE_ENV === "production";
   static is = <T>(o:T):o is T => !(o === undefined || o === null);
   static isMatch = (test:RegExp|string[],...a:string[]):boolean => {
@@ -42,6 +51,19 @@ export class CommonUtils {
     if(this.isObj(o)) return !Object.keys(o).length;
     if(this.isArr(o)) return !o.length;
     else throw(`global "empty" called on non-array or non-object`);
+  };
+  static isCtr = <T>(o:any|Constructor<T>):o is Constructor<T> => this.isFunc((new o));//incorrect implementation
+  static isInstance = <T,U extends Constructor<T> = Constructor<T>>(o:any|T,ctr:U):o is T => o instanceof ctr;
+  static isEnv = (envs:string|string[]) => {
+    const env = process.env.NODE_ENV.toLocaleLowerCase();
+    if(CommonUtils.isArr(envs)){
+      for(let i = 0,l = envs.length;i<l;i++){
+        const r = new RegExp(envs[i]);
+        if(r.test(env)) return true;
+      }
+      return false;
+    }
+    else return new RegExp(envs).test(env);
   };
   static notEmpty = (o:any|any[]) => !this.isEmpty(o);
   static randnum = (min:number,max:number) => Math.floor(Math.random() * (max - min + 1) + min);
@@ -146,6 +168,7 @@ export class CommonUtils {
     const moveSmaller = reverse ? 1 : -1;
     const moveLarger = reverse ? -1 : 1;
     return (a:any, b:any) => {
+      if(!(a[key] && b[key])) return 0;
       if (a[key] < b[key]) {
         return moveSmaller;
       }
@@ -226,6 +249,16 @@ export class CommonUtils {
     }
   };
   static dateAM = this.coerceToMidnight;
+  static isEighteenOrOlder = (dob:Date) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {age--;}
+    const isOldEnough = age >= 18;
+    if (!isOldEnough) throw new Error('Users must be 18 or older');
+    return true;
+  };
   static getHtmlTableType(k:string,p:any){
     switch(true){
       case p === undefined:

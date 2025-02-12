@@ -1,39 +1,35 @@
-import { redisConfig } from "../utils";
-import { Worker, Queue, Job } from 'bullmq';
+import { Job } from 'bullmq';
 import { Notification } from '../models';//import user to ensure it's registry
 import * as AllTypes from "../types";
+import { CommonUtils, createQueue, logger } from '../utils';
 
-const connection = redisConfig();
-
-const scheduleNotifications = async (job:Job) => {
+export const scheduleNotifications = async (job:Job) => {
   // Initialize process-notifications queue
-  const processNotificationsQueue = new Queue('process-notifications',{connection,skipVersionCheck:true});
+  const formatNotificationsQueue = createQueue('format-notification',{logItems:["error","closed"]});
   const notificationsToProcess = await Notification.find({
     status: { $in: [AllTypes.INotificationStatuses.NEW, AllTypes.INotificationStatuses.FAILED] }
   });
   // Process each notification
   for (const notification of notificationsToProcess) {
-    try {
-      const job = await processNotificationsQueue.add('process-notification-job',{id:notification.id},{delay:100});
-      notification.job = job.id;
-      notification.setStatus(AllTypes.INotificationStatuses.SENDING);
-      await notification.save();
-    }
-    catch (error) {
-      console.error('Error processing notification:', error);
-      notification.setStatus(AllTypes.INotificationStatuses.FAILED);
-      await notification.save();
-      throw error;
+    await notification.populate("audience");
+    const {id,type,method,data} = notification;
+    for (let i = 0,l = notification.audience.length;i<l;i++) {
+      const user = notification.audience[i];
+      const userContact = user.getUserContactByMethod(notification.method);
+      const isLast = i == notification.audience.length - 1;
+      try {
+        const jobData = {id,type,method,data,userContact,isLast};
+        const job = await formatNotificationsQueue.add('format-notification-job',jobData,{jobId:CommonUtils.shortId(),delay:100});
+        notification.job = job.id as string;
+        await notification.setStatus(AllTypes.INotificationStatuses.SENDING,null,true);
+      }
+      catch (error) {
+        console.error('Error processing notification:', error);
+        await notification.setStatus(AllTypes.INotificationStatuses.FAILED,null,true);
+        throw error;
+      }
     }
   }
   return { ok: true,count:notificationsToProcess.length };
 };
-const scheduleNotificationWorker = new Worker('schedule-notifications',scheduleNotifications,{connection,skipVersionCheck:true})
-  .on("resumed",() => console.log('⚡️ [schedule-notifications-worker]: Resumed -> '))
-  .on('error',info => console.log('⚡️ [schedule-notifications-worker]: Error -> ',info))
-  .on("ioredis:close",() => console.log('⚡️ [schedule-notifications-worker]: IORedis Closed -> '))
-  .on("drained",() => console.log('⚡️ [schedule-notifications-worker]: Drained -> []'))
-  .on("progress",info => console.log('⚡️ [schedule-notifications-worker]: Progess -> ',info))
-  .on('completed',info => console.log('⚡️ [schedule-notifications-worker]: Completed -> ',info.id))
-  .on('failed',info => console.log('⚡️ [schedule-notifications-worker]: Failed -> ',info.id));
-console.log('⚡️ [schedule-notifications-worker]: Initialized');
+export default scheduleNotifications;

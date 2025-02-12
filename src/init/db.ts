@@ -1,5 +1,6 @@
 import mongoose,{ConnectOptions} from 'mongoose';
 import bluebird from 'bluebird';
+import { logger } from '../utils';
 
 class Db {
   /**
@@ -10,10 +11,10 @@ class Db {
     try {
       (<any>mongoose).Promise = bluebird;
       await mongoose.connect(uri,opts);
-      console.log(`⚡️ [db]: DB (mongodb) is running`);
+      logger.print("db","DB (mongodb) is running");
     }
     catch(e){
-      console.error(`⚡️ [db]: MongoDB connection error. ${e}`);
+      logger.error(`MongoDB connection error. ${e}`);
       process.exit(1);
     }
   };

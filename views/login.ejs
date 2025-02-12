@@ -76,10 +76,13 @@
         <form class="login-form" method="post" action="/jobs/login">
             <input type="text" name="username" placeholder="Username"/>
             <input type="password" name="pin" placeholder="Password"/>
-            <input type="text" name="role" placeholder="Role"/>
+            <input type="text" name="role" placeholder="Role" value="admin"/>
             <button>Login</button>
             <% if (invalid) { %>
                 <p class="message error">Invalid username or password.</p>
+            <% } %>
+            <% if (expired) { %>
+              <p class="message error">Session expired.</p>
             <% } %>
         </form>
     </div>

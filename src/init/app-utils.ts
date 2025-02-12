@@ -1,5 +1,7 @@
 import { CorsOptions } from "cors";
-import { AppError } from "../utils";
+import { SessionOptions } from 'express-session';
+import MongoStore from 'connect-mongo';
+import { AppError, logger } from "../utils";
 
 const whitelist = JSON.parse(process.env.WHITELIST||"[]");
 const corsOptions:any = {
@@ -18,7 +20,7 @@ const corsOptionsDelegate = function (req:IRequest, callback:Function) {
   const isApiRoute = /api/.test(req.url);
   const wl = req.bvars && req.bvars["origins"]?req.bvars["origins"]:whitelist;
   const origin = req.header("Origin");
-  console.log({origin});
+  //logger.info({origin});
   switch(true){
     case !origin:
     case wl.includes(origin):{
@@ -37,9 +39,24 @@ const corsOptionsDelegate = function (req:IRequest, callback:Function) {
 const morganOutputTemplate = ':method :url :status [:remote-addr :user-agent :date[iso]]';
 //':res[content-length] - :response-time ms'
 
+const cookieSecret = process.env.COOKIE_SECRET || 'myCookieSecret';
+const sessionOpts:SessionOptions = {
+  name:"my-ultimate-session",
+  secret:cookieSecret,
+  saveUninitialized:false,
+  resave:false,
+  cookie:{maxAge:30 * 60 * 1000},
+  store: MongoStore.create({
+    collectionName:"ultimate-sessions",
+    mongoUrl:process.env.DATABASE_URL,
+    autoRemove: 'interval',
+    autoRemoveInterval: 30 // In minutes. DefaultmongoOptions: advancedOptions // See below for details
+  })
+};
 
 export {
   corsValidator,
   corsOptionsDelegate,
   morganOutputTemplate,
+  sessionOpts,
 }

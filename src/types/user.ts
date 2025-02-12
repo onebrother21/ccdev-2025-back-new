@@ -1,6 +1,7 @@
 import { Document } from "mongoose";
 import * as Profiles from "./profiles";
 import * as Notes from "./note";
+import * as Notifications from "./notification";
 
 export enum IUserStatuses {
   NEW = "new",
@@ -39,8 +40,8 @@ export type IUserType = {
   role:Profiles.IProfileTypes;
   createdOn:string|Date;
   updatedOn:string|Date;
-  status_activity:Status<IUserStatuses>[]; 
   status:IUserStatuses; 
+  statusUpdates:Status<IUserStatuses>[];
   email:string;
   name:{first:string;last:string;};
   username:string;
@@ -65,10 +66,15 @@ export type IUserType = {
     isAgeVerified?:boolean;
     isLicenseVerified?:boolean;
   }
+  info:any;
 };
+export type IUserInit = Pick<IUser,"email"|"role"|"dob">;
 export type IUserPreview = Pick<IUser,"id"|"location"|"name"|"role"> & {img?:string;title?:string;username?:string};
-export type IUserJson = IUserPreview & Pick<IUserType,"prefs"|"meta"|"createdOn"|"updatedOn"|"status"|"status_activity"> & {
+export type IUserJson = IUserPreview & Pick<IUserType,"prefs"|"meta"|"status"|"info"> & {
   profile:Profiles.IAdmin|Profiles.ICourier|Profiles.ICustomer|Profiles.IVendor;
+  memberSince:Date;
+  lastUpdate:Date;
+  isMgr:boolean;
   age:number;
   bio?:string;
 };
@@ -76,6 +82,7 @@ export interface IUserMethods {
   setStatus(name:IUserStatuses,info?:any,save?:boolean):Promise<void>;
   getProfile(role:Profiles.IProfileTypes):Profiles.IAdmin|Profiles.ICourier|Profiles.ICustomer|Profiles.IVendor|null;
   toAge():number|null;
+  getUserContactByMethod(method:Notifications.INotificationSendMethods):string;
   preview(role:Profiles.IProfileTypes):IUserPreview;
   json(role:Profiles.IProfileTypes,auth?:boolean):Partial<IUserJson>;
 }

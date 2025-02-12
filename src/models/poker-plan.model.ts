@@ -1,5 +1,6 @@
 import mongoose,{Schema,Model} from 'mongoose';
-import { getStatusArraySchema,getNoteArraySchema,stateAbbreviations  } from '../utils';
+import uniqueValidator from "mongoose-unique-validator";
+import { getStatusArraySchema,noteSchema,stateAbbreviations  } from '../utils';
 import * as AllTypes from "../types";
 
 type PokerPlanModel = Model<AllTypes.IPokerPlan,{},AllTypes.IPokerPlanMethods>;
@@ -23,7 +24,7 @@ const entrySchema = new Schema<AllTypes.IPokerEntry>({
   venue:venueSchema,
   results:{type:Schema.Types.Mixed,default:null},
   images:[String],
-  notes:getNoteArraySchema(),
+  notes:[noteSchema],
 },{_id:false,timestamps:false});
 const paramsSchema = new Schema<AllTypes.IPokerPlan["params"]>({
   expPlayRate: { type: String,required:true,enum:["wk","2wk","3wk","mo","3mo","6mo","yr"]},
@@ -33,10 +34,8 @@ const paramsSchema = new Schema<AllTypes.IPokerPlan["params"]>({
   stdError: { type: Number,required:true},
 },{_id:false,timestamps:false});
 
-
 const pokerPlanSchema = new Schema<AllTypes.IPokerPlan,PokerPlanModel,AllTypes.IPokerPlanMethods>({
-  status_activity:getStatusArraySchema(Object.values(AllTypes.IPokerPlanStatuses),AllTypes.IPokerPlanStatuses.NEW),
-  status:{type:String,default:AllTypes.IPokerPlanStatuses.NEW},
+  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IPokerPlanStatuses),AllTypes.IPokerPlanStatuses.NEW),
   creator:{type:ObjectId,ref:"users"},
   name:{ type: String,required:true},
   motto: { type: String},
@@ -49,12 +48,15 @@ const pokerPlanSchema = new Schema<AllTypes.IPokerPlan,PokerPlanModel,AllTypes.I
   venues:[venueSchema],
   entries:[entrySchema],
   params:paramsSchema,
+  info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
-
+pokerPlanSchema.plugin(uniqueValidator);
+pokerPlanSchema.virtual('status').get(function () {
+  return this.statusUpdates[this.statusUpdates.length - 1].name;
+});
 pokerPlanSchema.methods.setStatus = async function (name,info,save){
   const status = {name,time:new Date(),...(info?{info}:{})};
-  this.status_activity.push(status);
-  this.status = status.name;
+  this.statusUpdates.push(status);
   if(save) await this.save();
 };
 pokerPlanSchema.methods.json = function () {
@@ -71,8 +73,9 @@ pokerPlanSchema.methods.json = function () {
   json.endDate = this.endDate;
   json.endBal = this.endBal;
   json.venues = this.venues;
-  json.entries = this.entries;
+  json.entries = this.entries.map(o => ({...o,notes:o.notes.map(n => n.json())})) as any[];
   json.params = this.params;
+  json.info = this.info;
   json.published = this.createdOn;
   json.updatedOn = this.updatedOn;
   return json as AllTypes.IPokerPlan;
