@@ -2,26 +2,27 @@ import { Router } from 'express';
 import { AuthJWT } from '../../middlewares';
 import productMgmtValidators from './product-mgmt.validators';
 import ProductMgmtController from './product-mgmt.controller';
-import { Routes } from '../v2-routerstrings';
+import { V2Routes } from '../v2-routerstrings';
 
+const routes = V2Routes.ProductMgmt;
 const router = Router();
 
-router.post(Routes.Products.CreateProduct,[
+router.post(routes.CreateProduct,[
   AuthJWT,...productMgmtValidators.CreateProduct,
   ProductMgmtController.CreateProduct
 ]);
-router.get(Routes.Products.QueryProducts,[AuthJWT,ProductMgmtController.QueryProductsByVendor]);
-router.get(Routes.Products.QueryProductsByDetails,[AuthJWT,ProductMgmtController.QueryProductsByDetails]);
-router.get(Routes.Products.QueryProductsByVendor,[
+router.get(routes.QueryProducts,[AuthJWT,ProductMgmtController.QueryProductsByVendor]);
+router.get(routes.QueryProductsByDetails,[AuthJWT,ProductMgmtController.QueryProductsByDetails]);
+router.get(routes.QueryProductsByVendor,[
   AuthJWT,...productMgmtValidators.QueryProductsByVendor,
   ProductMgmtController.QueryProductsByVendor
 ]);
-router.get(Routes.Products.GetProduct,[AuthJWT,ProductMgmtController.GetProduct]);
-router.put(Routes.Products.UpdateProduct,[
+router.get(routes.GetProduct,[AuthJWT,ProductMgmtController.GetProduct]);
+router.put(routes.UpdateProduct,[
   AuthJWT,...productMgmtValidators.UpdateProduct,
   ProductMgmtController.UpdateProduct
 ]);
-router.delete(Routes.Products.DeleteProduct,[
+router.delete(routes.DeleteProduct,[
   AuthJWT,...productMgmtValidators.DeleteProduct,
   ProductMgmtController.DeleteProduct
 ]);

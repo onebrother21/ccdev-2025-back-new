@@ -1,9 +1,24 @@
 
-export * from "./profiles.service";
-export * from "./order.service";
-export * from "./products.service";
+import { ProfilesService as Profiles } from "./profiles.service";
+import { OrderService as Order } from "./order.service";
+import { ProductsService as Product } from "./products.service";
 
-export * from "./notification.service";
-export * from "./reports.service";
-export * from "./geo.service";
-export * from "./message.service";
+import { NotificationService as Notification } from "./notification.service";
+import { ReportsService as Reports } from "./reports.service";
+import { GeoService as Geo } from "./geo.service";
+import { MessageService as Message } from "./message.service";
+import { WebSocketService as Sockets } from "./websocket.service";
+import { AnalyticsService as Analytics } from "./analytics.service";
+
+export const Services = {
+  Profiles,
+  Order,
+  Product,
+  Notification,
+  Reports,
+  Geo,
+  Message,
+  Sockets,
+  Analytics,
+};
+export default Services;

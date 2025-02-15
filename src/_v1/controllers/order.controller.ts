@@ -47,7 +47,7 @@ const UpdateOrder:IHandler = async (req,res,next) => {
       message:"Order does not exist"
     });
     else {
-      await order.runBusinessLogic(req.bvars);
+      await order.calculateCharges(req.bvars);
       await order.populate(`creator customer courier vendor`);
       res.locals = {
         success:true,

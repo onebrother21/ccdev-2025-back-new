@@ -1,30 +1,30 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import { getStatusSchema,currencyCodes, getStatusArraySchema, CommonUtils, logger, stateAbbreviations } from '../utils';
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from '../utils';
 
-type ProductModel = Model<AllTypes.IProduct,{},AllTypes.IProductMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
-const concentrationSchema = new Schema<AllTypes.IProduct["concentration"]>({
+const concentrationSchema = new Schema<Types.IProduct["concentration"]>({
   amt:{type:Number,required:true},
   unit:{type:String,required:true},
 },{_id:false,timestamps:false});
-const priceSchema = new Schema<AllTypes.IProduct["price"]>({
+const priceSchema = new Schema<Types.IProduct["price"]>({
   amt:{type:Number,required:true},
-  curr:{type:String,required:true,enum:currencyCodes},
+  curr:{type:String,required:true,enum:Utils.currencyCodes},
   per:{type:String,required:true},
 },{_id:false,timestamps:false});
-const reviewSchema = new Schema<AllTypes.IProductReview>({
+const reviewSchema = new Schema<Types.IProductReview>({
   user: { type: ObjectId, ref: 'customers', required: true },
   score: { type: Number,enum:[1,2,3,4,5],required:true },
   title: { type: String },
   content: { type: String },
   time: { type: Date, default: Date.now },
-  slug: { type: String,default:() => CommonUtils.shortId()},
+  slug: { type: String,default:() => Utils.shortId()},
 },{_id:false,timestamps:false});
-const productSchema = new Schema<AllTypes.IProduct,ProductModel,AllTypes.IProductMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IProductStatuses),AllTypes.IProductStatuses.COMING_SOON),
+
+const productSchema = new Schema<Types.IProduct,Product,Types.IProductMethods>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IProductStatuses),Types.IProductStatuses.COMING_SOON),
   creator:{type:ObjectId,ref:"users",required:true},
   name:{type:String,required:true},
   concentration:{type:concentrationSchema,required:true},
@@ -32,8 +32,8 @@ const productSchema = new Schema<AllTypes.IProduct,ProductModel,AllTypes.IProduc
   description:{type:String,maxlength:140},
   kind:{type:String},
   type:{type:String},
-  origin:{type:String,enum:[...stateAbbreviations]},
-  placeOfOrigin:{type:String,enum:[...stateAbbreviations]},
+  origin:{type:String,enum:[...Utils.stateAbbreviations]},
+  placeOfOrigin:{type:String,enum:[...Utils.stateAbbreviations]},
   dateOfOrigin:{type:Date},
   sku:{type:String},
   expiration:{type:Date},
@@ -53,13 +53,13 @@ productSchema.methods.setStatus = async function (name,info,save){
   this.statusUpdates.push(status);
   if(save) await this.save();
 };
-productSchema.methods.addReview = async function(review:AllTypes.IProductReview,save?:boolean) {
+productSchema.methods.addReview = async function(review:Types.IProductReview,save?:boolean) {
   const ratingCt = this.reviews.length;
   this.rating = ((this.rating || 0) * ratingCt + review.score)/(ratingCt + 1);
   this.reviews.push(review);
   if(save) await this.save();
 };
-productSchema.methods.removeReview = async function(review:AllTypes.IProductReview,save?:boolean) {
+productSchema.methods.removeReview = async function(review:Types.IProductReview,save?:boolean) {
   const ratingCt = this.reviews.length;
   this.rating = ((this.rating || 0) * ratingCt - review.score)/(ratingCt - 1);
   this.reviews = this.reviews.filter(o => o.slug !== review.slug);
@@ -69,7 +69,7 @@ productSchema.virtual('ratingCt').get(function (){return this.reviews.length;});
 productSchema.virtual('reviewCt').get(function (){return this.reviews.filter(o => !!o.title).length;});
 productSchema.methods.json = function () {
   try{
-    const json:Partial<AllTypes.IProduct> =  {};
+    const json:Partial<Types.IProduct> =  {};
     json.id = this.id;
     json.createdOn = this.createdOn;
     json.creator = this.creator;
@@ -90,9 +90,10 @@ productSchema.methods.json = function () {
     json.rating = this.rating;
     json.vendorCt= this.vendors.length;
     json.info = this.info;
-    return json as AllTypes.IProduct;
-  } catch(e){logger.error(e);throw e;}
+    return json as Types.IProduct;
+  } catch(e){Utils.logger.error(e);throw e;}
 };
 
-const Product = mongoose.model<AllTypes.IProduct,ProductModel>('products',productSchema);
+type Product = Model<Types.IProduct,{},Types.IProductMethods>;
+const Product:Product = mongoose.model<Types.IProduct>('products',productSchema);
 export default Product;

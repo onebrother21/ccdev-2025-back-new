@@ -1,7 +1,7 @@
 import { CustomerOpsService } from "./customer-ops.service";
-import * as AllTypes from "../../types";
-import { NotificationService } from "../../services";
-
+import Services from "../../services";
+import Types from "../../types";
+import Utils from '../../utils';
 export class CustomerOpsController {
   // 1️⃣ Account & Profile Management
   static registerCustomer: IHandler = async (req, res, next) => {
@@ -206,7 +206,7 @@ export class CustomerOpsController {
 
   static contactCourier: IHandler = async (req, res, next) => {
     try {
-      const user = req.user as AllTypes.IUser;
+      const user = req.user as Types.IUser;
       const courierId = req.params.courierId;
       const {message} = req.body.data;
       res.locals.success = true;
@@ -221,7 +221,7 @@ export class CustomerOpsController {
   static getCustomerNotifications: IHandler = async (req, res, next) => {
     try {
       res.locals.success = true;
-      res.locals.data = await NotificationService.getNotifications(req.user.id);
+      res.locals.data = await Services.Notification.getNotifications(req.user.id);
       next();
     } catch (e) {
       throw e;

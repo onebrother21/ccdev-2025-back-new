@@ -1,9 +1,9 @@
-import { Document, Schema } from "mongoose";
-import * as User from "./user";
+import { Document } from "mongoose";
+import * as User from "./user.types";
 import * as Profiles from "./profiles";
 import * as Products from "./products";
 import * as Payment from "./payment.types";
-import * as Tasks from "./task";
+import * as Tasks from "./task.types";
 import * as Notes from "./note";
 
 export enum IOrderStatuses {
@@ -52,7 +52,7 @@ export type IOrderType = {
 }
 export interface IOrderMethods {
   setStatus(name:IOrderStatuses,info?:any,save?:boolean):Promise<void>;
-  runBusinessLogic(bvars:any):Promise<void>;
+  calculateCharges(bvars:any):Promise<void>;
   json():Partial<IOrder>;
 }
 export interface IOrder extends IOrderType,IOrderMethods,Document {}

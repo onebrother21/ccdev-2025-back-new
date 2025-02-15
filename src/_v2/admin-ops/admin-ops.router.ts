@@ -9,6 +9,7 @@ const router = Router();
 
 router.use(AuthJWT);
 router.post(routes.jobs.create,[...validators.PostJob,ctrl.PostJob,...PostMiddleware]);
+router.post(routes.jobs.logVars,[...validators.PostJob,ctrl.PostLogVarsJob,...PostMiddleware]);
 //🔹 Business Management
 router.post(routes.business.registerBusiness,[ctrl.registerBusiness,...PostMiddleware]);
 router.post(routes.business.verifyBusiness,[ctrl.verifyBusiness,...PostMiddleware]);

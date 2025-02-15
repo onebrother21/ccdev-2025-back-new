@@ -1,7 +1,9 @@
 import { Document } from "mongoose";
+import * as Auth from "./auth.types";
 import * as Profiles from "./profiles";
 import * as Notes from "./note";
 import * as Notifications from "./notification";
+
 
 export enum IUserStatuses {
   NEW = "new",
@@ -13,40 +15,17 @@ export enum IUserStatuses {
   DELETED = "deleted"
 
 }
-export type IUserRoles = "guest"|"user"|"courier"|"vendor"|"admin";
-export type IPin = `${Digit}${Digit}${Digit}${Digit}`;
-export type IAuthToken = {
-  type:"req"|"auth"|"api";
-  user:string;
-  role:IUserRoles;
-  issued:Date;
-  expires:Date;
-  expiresStr:string;
-};
-export type IAuthEvents = "created"|"registered"|"verified"|"loggedout"|"loggedin"|"reset"|"updated";
-export type IAuthActivity = Partial<Record<IAuthEvents,string|Date>>;
-export type IAuthParams = {
-  pin:IPin;
-  reset:string|null;
-  verification:string|null;
-  verificationSent:Date;
-  pushToken:string|null;
-  socketId:string|null;
-  // token:AuthToken|null;
-  // scopes:string[];
-  // activity:AuthActivity;
-};
-export type IUserType = {
-  role:Profiles.IProfileTypes;
+export type IUserType = Auth.IAuthParams & {
   createdOn:string|Date;
   updatedOn:string|Date;
-  status:IUserStatuses; 
+  role:Profiles.IProfileTypes;
   statusUpdates:Status<IUserStatuses>[];
+  status:IUserStatuses; 
   email:string;
+  mobile:string;
   name:{first:string;last:string;};
   username:string;
   dob:string|Date;
-  mobile: string;
   location:string;
   loc?:LocationObj;
   agree:Date;
@@ -61,6 +40,7 @@ export type IUserType = {
     courier?:Profiles.ICourier;
     customer?:Profiles.ICustomer;
     vendor?:Profiles.IVendor;
+    artist?:Profiles.IArtist;
   };
   meta?:{
     isAgeVerified?:boolean;
@@ -86,4 +66,4 @@ export interface IUserMethods {
   preview(role:Profiles.IProfileTypes):IUserPreview;
   json(role:Profiles.IProfileTypes,auth?:boolean):Partial<IUserJson>;
 }
-export interface IUser extends IAuthParams,IUserType,IUserMethods,Document {}
+export interface IUser extends IUserType,IUserMethods,Document {}

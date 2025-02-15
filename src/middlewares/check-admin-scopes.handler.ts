@@ -1,7 +1,7 @@
-import * as AllTypes from "../types";
+import Types from "../types";
 
 export const CheckAdminScopes:(scopes?:string[]) => IHandler = (scopes) => (req,res,next) => {
-  const userScopes = (req.user as AllTypes.IUser).profiles.admin.scopes || [];
+  const userScopes = (req.user as Types.IUser).profiles.admin.scopes || [];
   if(!(scopes && scopes.length)) next();
   else if(userScopes.includes("everything")) next();
   else {

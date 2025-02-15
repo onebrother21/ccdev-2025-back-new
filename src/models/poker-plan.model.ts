@@ -1,22 +1,21 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import { getStatusArraySchema,noteSchema,stateAbbreviations  } from '../utils';
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from '../utils';
 
-type PokerPlanModel = Model<AllTypes.IPokerPlan,{},AllTypes.IPokerPlanMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
-const venueSchema = new Schema<AllTypes.IPokerVenue>({
+const venueSchema = new Schema<Types.IPokerVenue>({
   name: { type: String,required:true},
   streetAddr: { type: String,required:true},
   city: { type: String,required:true},
-  state: { type: String,required:true,enum:[...stateAbbreviations]},
+  state: { type: String,required:true,enum:[...Utils.stateAbbreviations]},
   postal: { type: String,required:true},
   country: { type: String,required:true},
   desc:{type:String,maxlength:140},
 },{_id:false,timestamps:false});
-const entrySchema = new Schema<AllTypes.IPokerEntry>({
-  payments:getStatusArraySchema([]),
+const entrySchema = new Schema<Types.IPokerEntry>({
+  payments:Utils.getStatusArraySchema([]),
   type: { type: String,required:true},
   start: { type: Date,required:true},
   arrival: { type: Date },
@@ -24,9 +23,9 @@ const entrySchema = new Schema<AllTypes.IPokerEntry>({
   venue:venueSchema,
   results:{type:Schema.Types.Mixed,default:null},
   images:[String],
-  notes:[noteSchema],
+  notes:[Utils.noteSchema],
 },{_id:false,timestamps:false});
-const paramsSchema = new Schema<AllTypes.IPokerPlan["params"]>({
+const paramsSchema = new Schema<Types.IPokerPlan["params"]>({
   expPlayRate: { type: String,required:true,enum:["wk","2wk","3wk","mo","3mo","6mo","yr"]},
   expCTTRatio: { type: Number,required:true},
   expHitRate: { type: Number,required:true},
@@ -34,8 +33,8 @@ const paramsSchema = new Schema<AllTypes.IPokerPlan["params"]>({
   stdError: { type: Number,required:true},
 },{_id:false,timestamps:false});
 
-const pokerPlanSchema = new Schema<AllTypes.IPokerPlan,PokerPlanModel,AllTypes.IPokerPlanMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IPokerPlanStatuses),AllTypes.IPokerPlanStatuses.NEW),
+const pokerPlanSchema = new Schema<Types.IPokerPlan,PokerPlan,Types.IPokerPlanMethods>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IPokerPlanStatuses),Types.IPokerPlanStatuses.NEW),
   creator:{type:ObjectId,ref:"users"},
   name:{ type: String,required:true},
   motto: { type: String},
@@ -60,7 +59,7 @@ pokerPlanSchema.methods.setStatus = async function (name,info,save){
   if(save) await this.save();
 };
 pokerPlanSchema.methods.json = function () {
-  const json:Partial<AllTypes.IPokerPlan> =  {};
+  const json:Partial<Types.IPokerPlan> =  {};
   json.id = this._id.toString();
   json.creator = this.creator.json() as any,
   json.name = this.name;
@@ -78,8 +77,10 @@ pokerPlanSchema.methods.json = function () {
   json.info = this.info;
   json.published = this.createdOn;
   json.updatedOn = this.updatedOn;
-  return json as AllTypes.IPokerPlan;
+  return json as Types.IPokerPlan;
 };
 
-const PokerPlan = mongoose.model<AllTypes.IPokerPlan,PokerPlanModel>('pokerPlans',pokerPlanSchema);
+
+type PokerPlan = Model<Types.IPokerPlan,{},Types.IPokerPlanMethods>;
+const PokerPlan:PokerPlan = mongoose.model<Types.IPokerPlan>('pokerPlans',pokerPlanSchema);
 export default PokerPlan;

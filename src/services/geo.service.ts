@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { AppError } from '../utils';
+import Types from "../types";
+import Utils from '../utils';
 
 export class GeoService {
   /** Computes the optimal route between two locations */
@@ -13,10 +14,10 @@ export class GeoService {
           key: API_KEY
         }
       });
-      if (!response.data || response.data.status !== 'OK') throw new AppError(400, 'Failed to fetch route.');
+      if (!response.data || response.data.status !== 'OK') throw new Utils.AppError(400, 'Failed to fetch route.');
       return response.data.routes[0];
     } catch (error) {
-      throw new AppError(500, 'Error fetching optimal route.');
+      throw new Utils.AppError(500, 'Error fetching optimal route.');
     }
   }
 }

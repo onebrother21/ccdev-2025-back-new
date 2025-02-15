@@ -1,14 +1,8 @@
 import Express from "express";
 import http from 'http';
 import { Server, Socket } from 'socket.io';
-import { User } from '../models'; // Assuming User model is in models/User
-import * as AllTypes from "../types";
-
-const dbString = process.env.DATABASE_URL;
-const port = process.env.PORT;
-const hostname = process.env.HOSTNAME;
-const host = process.env.HOST;
-
+import Models from '../models'; // Assuming User model is in models/User
+import Types from "../types";
 
 const userSockets: Map<string, Socket> = new Map();
 
@@ -21,11 +15,11 @@ const initializeSockets = (app:Express.Application) => {
 
     // Register event - save the socketId to the user
     socket.on('register', async (userId: string) => {
-      const user = await User.findById(userId);
+      const user = await Models.User.findById(userId);
       if (user) {
         userSockets.set(userId, socket);
         user.socketId = socket.id;
-        user.setStatus(AllTypes.IUserStatuses.ACTIVE); // Mark as inactive
+        user.setStatus(Types.IUserStatuses.ACTIVE); // Mark as inactive
         await user.save();
         console.log(`User ${userId} registered with socketId: ${socket.id}`);
       }
@@ -33,11 +27,11 @@ const initializeSockets = (app:Express.Application) => {
 
     // Disconnect event - mark user as inactive and remove socketId
     socket.on('disconnect', async () => {
-      const user = await User.findOne({ socketId: socket.id });
+      const user = await Models.User.findOne({ socketId: socket.id });
       if (user) {
         userSockets.delete(user.id);
         user.socketId = null;
-        user.setStatus(AllTypes.IUserStatuses.INACTIVE); // Mark as inactive
+        user.setStatus(Types.IUserStatuses.INACTIVE); // Mark as inactive
         await user.save();
         console.log(`User ${user._id} disconnected and marked as inactive.`);
       }

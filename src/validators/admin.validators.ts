@@ -1,7 +1,7 @@
 import { body,oneOf } from "express-validator";
-import { CommonUtils, stateAbbreviations } from "../utils";
 import { CheckValidation } from "../middlewares";
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from "utils";
 
 const AdminValidators = {
   CreateAdmin:[[
@@ -17,7 +17,7 @@ const AdminValidators = {
     .withMessage('Invalid scopes')
     .optional(),
     body('data.scopes.*').if(body('data.scopes').exists()).trim().escape().optional(),
-    body('data.approval').trim().escape().isIn(Object.values(AllTypes.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
+    body('data.approval').trim().escape().isIn(Object.values(Types.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
   ],CheckValidation] as IHandler[],
 };
 export default AdminValidators;

@@ -6,17 +6,18 @@ import {
   sendSMS,
   sendDummy
 } from "./send-notification-helpers";
-import { Notification } from '../models';
-import * as AllTypes from "../types";
+import Models from '../models';
+import Types from "../types";
+import Utils from '../utils';
 
 type NotificationObj = {
   userContact:string;
   data:any;
-  type:AllTypes.INotification["type"];
+  type:Types.INotification["type"];
 }
 
 export const sendNotifications = async (job:Job) => {
-  const notification = await Notification.findById(job.data.id);
+  const notification = await Models.Notification.findById(job.data.id);
   if(!notification) throw new Error('Notification does not exist');
   const requestBody = job.data.requestBody;
   try{
@@ -57,13 +58,13 @@ export const sendNotifications = async (job:Job) => {
     }
 
     // Mark notification as sent
-    const status = job.data.isLast?AllTypes.INotificationStatuses.SENT:AllTypes.INotificationStatuses.SENT_SOME;
+    const status = job.data.isLast?Types.INotificationStatuses.SENT:Types.INotificationStatuses.SENT_SOME;
     await notification.setStatus(status,null,true);
     return { ok: true };
   }
   catch (error) {
     console.error('Error processing notification:', error);
-    await notification.setStatus(AllTypes.INotificationStatuses.FAILED,null,true);
+    await notification.setStatus(Types.INotificationStatuses.FAILED,null,true);
     throw error;
   }
 };

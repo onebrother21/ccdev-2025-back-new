@@ -1,16 +1,15 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import * as AllTypes from "../types";
-import { getStatusArraySchema } from '../utils';
+import Types from "../types";
+import Utils from '../utils';
 
-type NotificationModel = Model<AllTypes.INotification,{},AllTypes.INotificationMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
-const notificationSchema = new Schema<AllTypes.INotification,NotificationModel,AllTypes.INotificationMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.INotificationStatuses),AllTypes.INotificationStatuses.NEW),
-  type: {type: String,enum:Object.keys(AllTypes.INotificationTemplates),required: true},
+const notificationSchema = new Schema<Types.INotification,Notification,Types.INotificationMethods>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.INotificationStatuses),Types.INotificationStatuses.NEW),
+  type: {type: String,enum:Object.keys(Types.INotificationTemplates),required: true},
   audience: [{ type:ObjectId, ref: "users", required: true }],
-  method: {type: String,enum: Object.values(AllTypes.INotificationSendMethods),required:true},
+  method: {type: String,enum: Object.values(Types.INotificationSendMethods),required:true},
   job: { type: String },
   meta: { type: Schema.Types.Mixed },
   retries: { type: Number, default: () => 0 },
@@ -27,7 +26,7 @@ notificationSchema.methods.setStatus = async function (name,info,save){
   if(save) await this.save();
 };
 notificationSchema.methods.json = function () {
-  const json:Partial<AllTypes.INotification> =  {};
+  const json:Partial<Types.INotification> =  {};
   json.id = this.id;
   json.method = this.method;
   json.audience = this.audience;
@@ -40,8 +39,9 @@ notificationSchema.methods.json = function () {
   json.info = this.info;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
-  return json as AllTypes.INotification;
+  return json as Types.INotification;
 };
 
-const Notification = mongoose.model<AllTypes.INotification,NotificationModel>('notifications',notificationSchema);
+type Notification = Model<Types.INotification,{},Types.INotificationMethods>;
+const Notification:Notification = mongoose.model<Types.INotification>('notifications',notificationSchema);
 export default Notification;

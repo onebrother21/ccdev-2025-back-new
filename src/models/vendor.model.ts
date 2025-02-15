@@ -1,22 +1,23 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
-import { getStatusArraySchema,getAddressSchema,getLicenseSchema } from '../utils';
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from '../utils';
 
-type VendorModel = Model<AllTypes.IVendor,{},AllTypes.IVendorMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
-const itemsSchema = new Schema<AllTypes.IVendor["items"][0]>({
+const itemsSchema = new Schema<Types.IVendor["items"][0]>({
   qty:{type:Number},
   item:{type:ObjectId,ref:"products",required:true},
   receivedOn:{type:Date},
 },{_id:false,timestamps:false});
+
 const hoursSchema = new Schema({open: { type: String},close: { type: String},},{_id:false,timestamps:false});
-const vendorSchema = new Schema<AllTypes.IVendor,VendorModel,AllTypes.IVendorMethods>({
+
+const vendorSchema = new Schema<Types.IVendor,Vendor,Types.IVendor>({
   mgr:{type:ObjectId,ref:"users",required:true},
   users:[{type:ObjectId,ref:"users"}],
-  approvalUpdates:getStatusArraySchema(Object.values(AllTypes.IApprovalStatuses),AllTypes.IApprovalStatuses.REQUESTED),
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IProfileStatuses),AllTypes.IProfileStatuses.NEW),
+  approvalUpdates:Utils.getStatusArraySchema(Object.values(Types.IApprovalStatuses),Types.IApprovalStatuses.REQUESTED),
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IProfileStatuses),Types.IProfileStatuses.NEW),
   name:{type:String,required:true,validate:/^[a-zA-Z0-9\s]{3,20}$/,unique: true, lowercase: true},
   displayName:{type:String,validate:/^[a-zA-Z0-9]{2,20}$/,sparse: true},
   email: { type: String, unique: true, lowercase: true ,required:true},
@@ -26,9 +27,10 @@ const vendorSchema = new Schema<AllTypes.IVendor,VendorModel,AllTypes.IVendorMet
   title:{type:String},
   bio:{type:String,max:140},
   location:{type:{type:String,default:"Point"},coordinates:[Number]},
-  address:{type:getAddressSchema(),required:true},
-  license:{type:getLicenseSchema()},
+  address:{type:Utils.getAddressSchema(),required:true},
+  license:{type:Utils.getLicenseSchema()},
   items:{type:[itemsSchema],default:[]},
+  tempPswd:{type:{code:String,expires:Date}},
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
 
@@ -51,7 +53,7 @@ vendorSchema.methods.setStatus = async function (name,info,save){
   if(save) await this.save();
 };
 vendorSchema.methods.json = function () {
-  const json:Partial<AllTypes.IVendor> =  {};
+  const json:Partial<Types.IVendor> =  {};
   json.id = this.id;
   json.displayName = this.displayName;
   json.name = this.name;
@@ -74,8 +76,9 @@ vendorSchema.methods.json = function () {
   json.info = this.info;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
-  return json as AllTypes.IVendor;
+  return json as Types.IVendor;
 };
 
-const Vendor = mongoose.model<AllTypes.IVendor,VendorModel>('vendors',vendorSchema);
+type Vendor = Model<Types.IVendor,{},Types.IVendorMethods>;
+const Vendor:Vendor = mongoose.model<Types.IVendor>('vendors',vendorSchema);
 export default Vendor;

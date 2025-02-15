@@ -1,7 +1,7 @@
 import { Job } from 'bullmq';
 import { Model } from 'mongoose';
 import path from 'path';
-import { logger } from "../utils";
+import Utils from "../utils";
 
 export const bulkEditCollection = async (job:Job) => {
   try {

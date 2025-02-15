@@ -1,12 +1,12 @@
 import { body,oneOf } from "express-validator";
 import { CheckValidation } from "../middlewares";
-import { CommonUtils,stateAbbreviations } from "../utils";
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from "utils";
 
 const AuthValidators = {
   Signup:[[
     body('data.email').isEmail().withMessage('Invalid email'),
-    body('data.dob').isISO8601().withMessage('Invalid DOB').custom(CommonUtils.isEighteenOrOlder),
+    body('data.dob').isISO8601().withMessage('Invalid DOB').custom(Utils.isEighteenOrOlder),
   ],CheckValidation] as IHandler[],
   VerifyEmail:[[
     body('data.email').isEmail().withMessage('Invalid email'), 
@@ -37,7 +37,7 @@ const AuthValidators = {
   ],CheckValidation] as IHandler[],
   
   UpdateCourier:[[
-    body('data.approval').trim().escape().isIn(Object.values(AllTypes.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
+    body('data.approval').trim().escape().isIn(Object.values(Types.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
     body('data.vehicle').isObject().withMessage('Invalid preferences').optional(),
     oneOf([
       body('data.vehicle.VIN').if(body('data.vehicle').exists()).notEmpty().withMessage('Invalid vehicle info'),
@@ -53,13 +53,13 @@ const AuthValidators = {
     body('data.license').isObject().withMessage('Invalid preferences').optional(),
     oneOf([
       body('data.license.num').if(body('data.license').exists()).notEmpty().isInt().withMessage('Invalid license data'),
-      body('data.license.state').if(body('data.license').exists()).notEmpty().isIn(stateAbbreviations).withMessage('Invalid license data'),
+      body('data.license.state').if(body('data.license').exists()).notEmpty().isIn(Utils.stateAbbreviations).withMessage('Invalid license data'),
       body('data.license.expires').if(body('data.license').exists()).notEmpty().isISO8601().withMessage('Invalid license data'),
     ]),
     body('data.insurance').isObject().withMessage('Invalid preferences').optional(),
     oneOf([
       body('data.insurance.num').if(body('data.insurance').exists()).notEmpty().isInt().withMessage('Invalid insurance data'),
-      body('data.insurance.state').if(body('data.insurance').exists()).notEmpty().isIn(stateAbbreviations).withMessage('Invalid insurance data'),
+      body('data.insurance.state').if(body('data.insurance').exists()).notEmpty().isIn(Utils.stateAbbreviations).withMessage('Invalid insurance data'),
       body('data.insurance.expires').if(body('data.insurance').exists()).notEmpty().isISO8601().withMessage('Invalid insurance data'),
     ]),
   ],CheckValidation] as IHandler[],
@@ -69,7 +69,7 @@ const AuthValidators = {
     oneOf([
       body('data.address.streetAddr').if(body('data.address').exists()).notEmpty().withMessage('Invalid address'),
       body('data.address.city').if(body('data.address').exists()).notEmpty().withMessage('Invalid address'),
-      body('data.address.state').if(body('data.address').exists()).notEmpty().isIn(stateAbbreviations).withMessage('Invalid preferences'),
+      body('data.address.state').if(body('data.address').exists()).notEmpty().isIn(Utils.stateAbbreviations).withMessage('Invalid preferences'),
       body('data.address.postal').if(body('data.address').exists()).notEmpty().withMessage('Invalid preferences'),
       body('data.address.country').if(body('data.address').exists()).notEmpty().withMessage('Invalid preferences'),
     ]),
@@ -77,19 +77,19 @@ const AuthValidators = {
   UpdateVendor:[[
     body('data.img').isString().withMessage('Invalid image').optional(),
     body('data.address').isObject().withMessage('Invalid address').optional(),
-    body('data.approval').trim().escape().isIn(Object.values(AllTypes.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
+    body('data.approval').trim().escape().isIn(Object.values(Types.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
     body('data.address').isObject().withMessage('Invalid address').optional(),
     oneOf([
       body('data.address.streetAddr').if(body('data.address').exists()).notEmpty().withMessage('Invalid address'),
       body('data.address.city').if(body('data.address').exists()).notEmpty().withMessage('Invalid address'),
-      body('data.address.state').if(body('data.address').exists()).notEmpty().isIn(stateAbbreviations).withMessage('Invalid preferences'),
+      body('data.address.state').if(body('data.address').exists()).notEmpty().isIn(Utils.stateAbbreviations).withMessage('Invalid preferences'),
       body('data.address.postal').if(body('data.address').exists()).notEmpty().withMessage('Invalid preferences'),
       body('data.address.country').if(body('data.address').exists()).notEmpty().withMessage('Invalid preferences'),
     ]),
     body('data.license').isObject().withMessage('Invalid preferences').optional(),
     oneOf([
       body('data.license.num').if(body('data.license').exists()).notEmpty().isInt().withMessage('Invalid license data'),
-      body('data.license.state').if(body('data.license').exists()).notEmpty().isIn(stateAbbreviations).withMessage('Invalid license data'),
+      body('data.license.state').if(body('data.license').exists()).notEmpty().isIn(Utils.stateAbbreviations).withMessage('Invalid license data'),
       body('data.license.expires').if(body('data.license').exists()).notEmpty().isISO8601().withMessage('Invalid license data'),
     ]),
   ],CheckValidation] as IHandler[],
@@ -97,7 +97,7 @@ const AuthValidators = {
     body('data.img').isString().withMessage('Invalid image').optional(),
     body('data.scopes').isArray().withMessage('Invalid scopes').optional(),
     body("data.scopes.*").isString().withMessage('Invalid scopes'),
-    body('data.approval').trim().escape().isIn(Object.values(AllTypes.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
+    body('data.approval').trim().escape().isIn(Object.values(Types.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
   ],CheckValidation] as IHandler[],
 };
 export default AuthValidators;

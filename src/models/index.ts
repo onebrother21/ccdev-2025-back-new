@@ -13,8 +13,9 @@ import Notification from './notification.model';
 import Message from './message.model';
 import Chat from './chat.model';
 import AuthToken,{DeadToken} from "./auth-token.model";
+import {Channel,Artist,Comment,Reaction,ViewerLog} from "./livestream.model";
 
-export {
+const Models = {
   User,
   Courier,
   Customer,
@@ -31,4 +32,6 @@ export {
   AuthToken,
   DeadToken,
   Payment,
+  Channel,Artist,Comment,Reaction,ViewerLog,
 };
+export default Models;

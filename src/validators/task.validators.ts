@@ -1,7 +1,7 @@
 import { body,oneOf } from "express-validator";
-import { CommonUtils } from "../utils";
 import { CheckValidation } from "../middlewares";
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from "utils";
 
 const taskCategories = ["dev-frontend","dev-backend","business-planning","person-planning"];
 const TaskValidators = {
@@ -24,7 +24,7 @@ const TaskValidators = {
     body('data.dueOn').isISO8601().withMessage('Invalid date').optional(),
     body('data.recurring').isBoolean().withMessage('Invalid parameters').optional(),
     body('data.recurringInterval').trim().escape().notEmpty().withMessage('Invalid parameters').optional(),
-    body('data.status').trim().escape().isIn(Object.values(AllTypes.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
+    body('data.status').trim().escape().isIn(Object.values(Types.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
     body('data.progress').isFloat({gt:0}).withMessage('Invalid parameters').optional(),
   ],CheckValidation] as IHandler[],
   AddNote:[[

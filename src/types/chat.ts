@@ -1,5 +1,5 @@
 import {Document} from 'mongoose';
-import * as Users from './user';
+import * as Users from './user.types';
 import * as Profiles from './profiles';
 import * as Messages from './message';
 

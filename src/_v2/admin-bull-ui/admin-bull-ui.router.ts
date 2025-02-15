@@ -16,7 +16,9 @@ const BullBoardRouter = getBullBoardRouter({
     "format-notification",
     "send-notification",
     "auto-assign-couriers",
-    "bulk-edit-collection"
+    "bulk-edit-collection",
+    "log-data",
+    "clock-bugs",
   ],
   basePath:'/jobs',
   refreshInterval:10 * 60 * 1000,

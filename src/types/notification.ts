@@ -1,11 +1,22 @@
 import { Document } from "mongoose";
-import * as Users from "./user";
+import * as Users from "./user.types";
 import * as Profiles from "./profiles";
 
 export enum INotificationTemplates {
   REGISTER = "Welcome {{name}}, thank you for registering with us!",
   VERIFY = "Hello and thank you for choosing HashDash. Your verification code is {{code}} and it expires in 15 minutes.",
   UNRECOGNIZED_LOGIN = "Hey {{name}}, we noticed an unrecognized login from a new device. If this wasn't you, please secure your account.",
+  
+  VENDOR_REGISTERED = "Welcome {{name}}, thank you for registering your vendor account #{{accountNo}} with us!",
+  VENDOR_ACCT_TEMP_PSWD = "You have requested a temporary passcode to add someone to your vendor account. The code is {{tempPswd}}."+
+  " It expires in 30 minutes.",
+  VENDOR_ACCT_USER_ADDED = "User {{name}} have been added to vendor account #{{accountNo}}.",
+  VENDOR_ACCT_USER_REMOVED = "User {{name}} have been removed from vendor account #{{accountNo}}.",
+  VENDOR_DISABLED = "Your vendor account #{{accountNo}} has been disabled.",
+  VENDOR_REMOVED = "Your vendor account #{{accountNo}} has been removed.",
+
+
+
 
   COURIER_ASSIGNED = `You have been assigned order {{orderId}}. Please accept or reject.`,
   COURIER_ASSIGNMENT_CANCELLED = `Order assignment canceled: {{orderId}}`,

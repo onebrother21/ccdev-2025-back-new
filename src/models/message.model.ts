@@ -1,29 +1,29 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import * as AllTypes from "../types";
-import { getStatusArraySchema } from '../utils';
+import Types from "../types";
+import Utils from '../utils';
 
-type MessageModel = Model<AllTypes.IMessage,{},AllTypes.IMessageMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
 const reactionSchema = new Schema({
   user: { type: ObjectId, refPath: 'userRef', required: true },
-  userRef: { type: String, enum: Object.values(AllTypes.IProfileTypes),required: true },
+  userRef: { type: String, enum: Object.values(Types.IProfileTypes),required: true },
   reaction: { type: String, required: true },
   time: { type: Date, default: Date.now },
 },{_id:false,timestamps:false});
 
-const messageSchema = new Schema<AllTypes.IMessage,MessageModel,AllTypes.IMessageMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IMessageStatuses),AllTypes.IMessageStatuses.SAVED),
+const messageSchema = new Schema<Types.IMessage,Message,Types.IMessageMethods>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IMessageStatuses),Types.IMessageStatuses.SAVED),
   chat: { type: ObjectId, ref: 'chats', required: true },
   sender: { type: ObjectId, refPath: 'senderRef', required: true },
-  senderRef: { type: String, enum: Object.values(AllTypes.IProfileTypes), required: true },
+  senderRef: { type: String, enum: Object.values(Types.IProfileTypes), required: true },
   content: { type: String, required: true },
   readBy: [{ type: ObjectId, refPath: 'readyByRefs', required: true }],
-  readByRefs: [{ type: String, enum: Object.values(AllTypes.IProfileTypes) }],
+  readByRefs: [{ type: String, enum: Object.values(Types.IProfileTypes) }],
   reactions: [reactionSchema],
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
+
 messageSchema.plugin(uniqueValidator);
 messageSchema.virtual('status').get(function () {
   return this.statusUpdates[this.statusUpdates.length - 1].name;
@@ -35,19 +35,20 @@ messageSchema.methods.setStatus = async function (name,info,save){
   if(save) await this.save();
 };
 messageSchema.methods.json = function () {
-  const json:Partial<AllTypes.IMessage> =  {};
+  const json:Partial<Types.IMessage> =  {};
   json.id = this.id;
   json.chat = this.chat.id || this.chat;
   json.sender = this.sender.json() as any;
   json.content = this.content;
   json.status = this.status;
   json.readBy = this.readBy;
-  json.reactions = this.reactions.map(o => ({...o,user:o.user.json()})) as AllTypes.IMessage["reactions"];
+  json.reactions = this.reactions.map(o => ({...o,user:o.user.json()})) as Types.IMessage["reactions"];
   json.info = this.info;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
-  return json as AllTypes.IMessage;
+  return json as Types.IMessage;
 };
 
-const Message = mongoose.model<AllTypes.IMessage,MessageModel>('messages',messageSchema);
+type Message = Model<Types.IMessage,{},Types.IMessageMethods>;
+const Message:Message = mongoose.model<Types.IMessage>('messages',messageSchema);
 export default Message;

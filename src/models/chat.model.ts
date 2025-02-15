@@ -1,24 +1,24 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import * as AllTypes from "../types";
-import { getStatusArraySchema } from '../utils';
+import Types from "../types";
+import Utils from '../utils';
 
-type ChatModel = Model<AllTypes.IChat,{},AllTypes.IChatMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
-const chatSchema = new Schema<AllTypes.IChat,ChatModel,AllTypes.IChatMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IChatStatuses),AllTypes.IChatStatuses.ACTIVE),
+const chatSchema = new Schema<Types.IChat,Chat,Types.IChatMethods>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IChatStatuses),Types.IChatStatuses.ACTIVE),
   type: {
     type: String,
     enum:["user-chat","service-chat"],
     required: true
   },
   participants: [{ type: Schema.Types.ObjectId, required: true, refPath: 'participantRefs' }],
-  participantRefs: [{ type: String, required: true, enum: Object.values(AllTypes.IProfileTypes) }],
+  participantRefs: [{ type: String, required: true, enum: Object.values(Types.IProfileTypes) }],
   messages: [{ type: ObjectId, ref: 'messages' }],
   lastMessage: { type: ObjectId, ref: 'messages' },
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
+
 chatSchema.plugin(uniqueValidator);
 chatSchema.virtual('status').get(function () {
   return this.statusUpdates[this.statusUpdates.length - 1].name;
@@ -30,7 +30,7 @@ chatSchema.methods.setStatus = async function (name,info,save){
   if(save) await this.save();
 };
 chatSchema.methods.json = function () {
-  const json:Partial<AllTypes.IChat> =  {};
+  const json:Partial<Types.IChat> =  {};
   json.id = this.id;
   json.type = this.type;
   json.participants = this.participants.map(o => o.json() as any);
@@ -41,8 +41,9 @@ chatSchema.methods.json = function () {
   json.info = this.info;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
-  return json as AllTypes.IChat;
+  return json as Types.IChat;
 };
 
-const Chat = mongoose.model<AllTypes.IChat,ChatModel>('chats',chatSchema);
+type Chat = Model<Types.IChat,{},Types.IChatMethods>;
+const Chat:Chat = mongoose.model<Types.IChat>('chats',chatSchema);
 export default Chat;

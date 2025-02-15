@@ -1,7 +1,7 @@
 import { body,oneOf } from "express-validator";
-import { stateAbbreviations } from "../utils";
 import { CheckValidation } from "../middlewares";
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from "utils";
 
 const PokerPlanValidators = {
   CreatePokerPlan:[[
@@ -38,7 +38,7 @@ const PokerPlanValidators = {
       body('data.bio').isString().isLength({max:140}).withMessage('Invalid bio').optional(),
       body('data.motto').isString().isLength({min:4,max:50}).withMessage('Invalid title').optional(),
       body('data.desc').isString().isLength({min:4,max:50}).withMessage('Invalid title').optional(),
-      body('data.status').trim().escape().isIn(Object.values(AllTypes.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
+      body('data.status').trim().escape().isIn(Object.values(Types.IApprovalStatuses)).withMessage('Invalid approval data').optional(),
       body('data.params').isObject().withMessage('Invalid parameters'),
       body('data.params.expPlayRate')
       .if(body('data.params').exists())

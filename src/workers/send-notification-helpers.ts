@@ -3,15 +3,12 @@ import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import axios from 'axios';
 import { getUserSocket } from '../init/sockets';
-import { CommonUtils } from '../utils';
-
-
+import Utils from '../utils';
 
 //dummy func
-
 const sendDummy = async (to: string, subject: string, text: string) => {
-  await CommonUtils.sleep(5);
-  return CommonUtils.longId();
+  await Utils.sleep(5);
+  return Utils.longId();
 };
 // Function for sending email
 const sendEmail = async (to: string, subject: string, text: string) => {

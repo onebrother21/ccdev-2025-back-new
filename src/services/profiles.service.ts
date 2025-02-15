@@ -1,33 +1,33 @@
-import { User,Customer, Courier, Vendor, Admin } from '../models';
 import { Model } from 'mongoose';
-import { logger } from '../utils';
-import * as AllTypes from "../types";
+import Models from '../models';
+import Types from "../types";
+import Utils from '../utils';
 
-const profileModels:Record<AllTypes.IProfileTypes,Model<any>> = {
-  customer:Customer,
-  courier:Courier,
-  vendor:Vendor,
-  admin:Admin
+const profileModels:Record<Types.IProfileTypes,Model<any>> = {
+  customer:Models.Customer,
+  courier:Models.Courier,
+  vendor:Models.Vendor,
+  admin:Models.Admin
 };
 export class ProfilesService {
   /**
    * To check for existing user
    */
-  static getProfile = async (email: string) => await User.findOne({ email });
+  static getProfile = async (email: string) => await Models.User.findOne({ email });
   /**
    * Sign up a new user
    */
-  static createProfile = async (role:AllTypes.IProfileTypes,user:AllTypes.IUser) =>  {
+  static createProfile = async (role:Types.IProfileTypes,user:Types.IUser) =>  {
     const model = profileModels[role];
     const profile = new model({
       user:user._id,
       name:user.name.first + " " + user.name.last,
       displayName:user.username,
-    }) as AllTypes.IAdmin|AllTypes.ICourier|AllTypes.ICustomer|AllTypes.IVendor;
+    }) as Types.IAdmin|Types.ICourier|Types.ICustomer|Types.IVendor;
     await profile.save();
     return {profile};
   }
-  static updateProfile = async (role:AllTypes.IProfileTypes,profileId:string,updates:any) => {
+  static updateProfile = async (role:Types.IProfileTypes,profileId:string,updates:any) => {
     const model = profileModels[role];
     const options = {new:true,runValidators:true};
     const profile = await model.findByIdAndUpdate(profileId,updates,options);

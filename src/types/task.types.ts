@@ -14,9 +14,10 @@ export enum ITaskStatuses {
   IN_PROGRESS = "in-progress"
 }
 export type ITaskType = {
-  creator:Profiles.IAdmin;
-  createdOn:Date;
-  updatedOn:Date;
+  createdOn:string|Date;
+  updatedOn:string|Date;
+  creator:Profiles.IProfiles;
+  creatorRef:`${Profiles.IProfileTypes}s`;
   statusUpdates:Status<ITaskStatuses>[]; 
   status:ITaskStatuses; 
   dueOn:Date;

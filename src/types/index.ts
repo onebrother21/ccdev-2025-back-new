@@ -1,11 +1,4 @@
-export * from "./user";
-export * from "./task";
-export * from "./profiles";
-export * from "./orders";
-export * from "./products";
-export * from "./note";
-export * from "./notification";
-export * from "./jpmoney-poker";
-export * from "./message";
-export * from "./chat";
-export * from "./payment.types";
+import * as Types from "./index-wrapper";
+
+export { Types };
+export default Types;

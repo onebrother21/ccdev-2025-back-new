@@ -1,4 +1,6 @@
-import { User } from '../../models';
+import Models from '../../models';
+import Types from "../../types";
+import Utils from '../../utils';
 import bcrypt from "bcryptjs";
 
 export class AdminBullUiController {
@@ -10,7 +12,7 @@ export class AdminBullUiController {
     const {username,pin,role} = req.body;
     if(!(username && pin)) res.redirect("/jobs/login?invalid=true");
     else {
-      const user = await User.findOne({username});
+      const user = await Models.User.findOne({username});
       if (!user) {
         console.log("no user");
         req.session.user = null;

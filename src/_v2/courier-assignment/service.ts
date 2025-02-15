@@ -1,17 +1,16 @@
-import { Courier,Order } from '../../models';
-import { AppError, CommonUtils, logger, transStrings } from '../../utils';
-import * as AllTypes from "../../types";
-
-import { NotificationService,ProfilesService } from '../../services';
+import Models from '../../models';
+import Utils from '../../utils';
+import Types from "../../types";
+import Services from '../../services';
 
 export class CourierMgmtService {
   static findAvaliable = async ({ vendorId, orderId }:{ vendorId:string, orderId:string }) =>  {
     // Get vendor location
-    const order = await Order.findById(orderId).populate('vendor');
-    if(!order) throw new AppError({status:404,message:'Order not found' });
+    const order = await Models.Order.findById(orderId).populate('vendor');
+    if(!order) throw new Utils.AppError(404,'Order not found');
     const vendorLocation = order.vendor.location;
     // Find couriers within a 10km radius (example filter)
-    const availableCouriers = await Courier.find({
+    const availableCouriers = await Models.Courier.find({
       isAvailable: true,
       location: {
         $near: {
@@ -23,35 +22,35 @@ export class CourierMgmtService {
     return {availableCouriers};
   };
   static assignCourier = async ({ orderId, courierId }:{ orderId:string, courierId:string }) => {
-    const order = await Order.findById(orderId);
-    if(!order) throw new AppError({status:404,message:'Order not found' });
+    const order = await Models.Order.findById(orderId);
+    if(!order) throw new Utils.AppError(404,'Order not found');
     order.courier = courierId as any;
-    await order.setStatus(AllTypes.IOrderStatuses.ASSIGNED,null,true);
+    await order.setStatus(Types.IOrderStatuses.ASSIGNED,null,true);
     await order.populate("courier");
     // Notify the courier
-    const notificationMethod = AllTypes.INotificationSendMethods.PUSH;
+    const notificationMethod = Types.INotificationSendMethods.PUSH;
     const notificationData =  {orderId};
-    await NotificationService.createNotification("COURIER_ASSIGNED",notificationMethod,[order.courier.user],notificationData);
+    await Services.Notification.createNotification("COURIER_ASSIGNED",notificationMethod,[order.courier.user],notificationData);
     return {ok:true};
   }
   static acceptOrder = async ({ orderId, courierId }:{ orderId:string, courierId:string }) => {
-    const order = await Order.findById(orderId);
-    if(!order) throw new AppError({status:404,message:'Order not found' });
-    if (order.courier?.toString() !== courierId) throw new AppError({status:403,message:'Unauthorized'});
-    await order.setStatus(AllTypes.IOrderStatuses.ACCEPTED,null,true);
+    const order = await Models.Order.findById(orderId);
+    if(!order) throw new Utils.AppError(404,'Order not found');
+    if (order.courier?.toString() !== courierId) throw new Utils.AppError({status:403,message:'Unauthorized'});
+    await order.setStatus(Types.IOrderStatuses.ACCEPTED,null,true);
     return {order};
   }
   static rejectOrder = async ({ orderId, courierId,reason }:{ orderId:string, courierId:string,reason:string }) => {
-    const order = await Order.findById(orderId);
-    if(!order) throw new AppError({status:404,message:'Order not found' });
-    if (order.courier?.toString() !== courierId) throw new AppError({status:403,message:'Unauthorized'});
+    const order = await Models.Order.findById(orderId);
+    if(!order) throw new Utils.AppError({status:404,message:'Order not found' });
+    if (order.courier?.toString() !== courierId) throw new Utils.AppError({status:403,message:'Unauthorized'});
     order.courier = null;
-    await order.setStatus(AllTypes.IOrderStatuses.REJECTED,{reason},true);
+    await order.setStatus(Types.IOrderStatuses.REJECTED,{reason},true);
     return {order};
   }
-  static fulfillOrder = async ({ orderId,status }:{ orderId:string,status:AllTypes.IOrderStatuses}) => {
-    const order = await Order.findById(orderId);
-    if(!order) throw new AppError({status:404,message:'Order not found' });
+  static fulfillOrder = async ({ orderId,status }:{ orderId:string,status:Types.IOrderStatuses}) => {
+    const order = await Models.Order.findById(orderId);
+    if(!order) throw new Utils.AppError({status:404,message:'Order not found' });
     await order.setStatus(status,null,true);
     return {order};
   } 

@@ -1,9 +1,8 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import { getStatusArraySchema,getAddressSchema,getLicenseSchema } from '../utils';
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from '../utils';
 
-type CustomerModel = Model<AllTypes.ICustomer,{},AllTypes.ICustomerMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
 
@@ -11,18 +10,19 @@ const cartItemSchema = new Schema<any>({
   item:{type:ObjectId,ref:"products",required:true},
   qty:{type:Number,required:true},
 },{_id:false,timestamps:false});
-const customerSchema = new Schema<AllTypes.ICustomer,CustomerModel,AllTypes.ICustomerMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IProfileStatuses),AllTypes.IProfileStatuses.NEW),
+const customerSchema = new Schema<Types.ICustomer,Customer,Types.ICustomerMethods>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IProfileStatuses),Types.IProfileStatuses.NEW),
   name:{type:String,required:true,validate:/^[a-zA-Z\s]{2,20}$/,unique: true, lowercase: true},
   displayName:{type:String,validate:/^[a-zA-Z0-9]{2,20}$/,sparse: true},
   img:{type:String},
-  address:{type:getAddressSchema()},
-  license:{type:getLicenseSchema()},
+  address:{type:Utils.getAddressSchema()},
+  license:{type:Utils.getLicenseSchema()},
   location:{type:{type:String,default:"Point"},coordinates:[Number]},
   user:{type:ObjectId,ref:"users",required:true},
   cart:[cartItemSchema],
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
+
 customerSchema.plugin(uniqueValidator);
 customerSchema.index({location:"2dsphere"});
 customerSchema.virtual('status').get(function () {
@@ -34,7 +34,7 @@ customerSchema.methods.setStatus = async function (name,info,save){
   if(save) await this.save();
 };
 customerSchema.methods.json = function () {
-  const json:Partial<AllTypes.ICustomer> =  {};
+  const json:Partial<Types.ICustomer> =  {};
   json.id = this.id;
   json.displayName = this.displayName;
   json.name = this.name;
@@ -45,8 +45,9 @@ customerSchema.methods.json = function () {
   json.cart = this.cart;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
-  return json as AllTypes.ICustomer;
+  return json as Types.ICustomer;
 };
 
-const Customer = mongoose.model<AllTypes.ICustomer,CustomerModel>('customers',customerSchema);
+type Customer = Model<Types.ICustomer,{},Types.ICustomerMethods>;
+const Customer:Customer = mongoose.model<Types.ICustomer>('customers',customerSchema);
 export default Customer;

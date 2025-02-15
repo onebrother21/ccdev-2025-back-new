@@ -1,10 +1,11 @@
 import { body,oneOf } from "express-validator";
 import { CheckValidation } from "../middlewares";
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from "utils";
 
 const NotificationValidators = {
   CreateNotification:[[
-    body('data.type').trim().escape().isIn(Object.keys(AllTypes.INotificationTemplates)).withMessage('Invalid type'),
+    body('data.type').trim().escape().isIn(Object.keys(Types.INotificationTemplates)).withMessage('Invalid type'),
     body('data.audience').isArray({min:1}).withMessage('Invalid users'),
     body('data.audience.*').if(body('data.users').exists()).isMongoId().withMessage("Invalid users"),
     body('data.data').isObject().withMessage('Invalid parameters').optional(),

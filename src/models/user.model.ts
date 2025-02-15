@@ -1,9 +1,8 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import { CommonUtils,getStatusArraySchema, logger } from "../utils";
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from '../utils';
 
-type UserModel = Model<AllTypes.IUser,{},AllTypes.IUserMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
 const nameSchema = new Schema({
@@ -16,13 +15,13 @@ const prefsSchema = new Schema({
   acceptPrivacy: { type: Date},
 },{_id:false,timestamps:false});
 const profilesSchema = new Schema({
-  admin:{type:ObjectId,ref:AllTypes.IProfileTypes.ADMIN+"s"},
-  courier:{type:ObjectId,ref:AllTypes.IProfileTypes.COURIER+"s"},
-  customer:{type:ObjectId,ref:AllTypes.IProfileTypes.CUSTOMER+"s"},
-  vendor:{type:ObjectId,ref:AllTypes.IProfileTypes.VENDOR+"s"},
+  admin:{type:ObjectId,ref:Types.IProfileTypes.ADMIN+"s"},
+  courier:{type:ObjectId,ref:Types.IProfileTypes.COURIER+"s"},
+  customer:{type:ObjectId,ref:Types.IProfileTypes.CUSTOMER+"s"},
+  vendor:{type:ObjectId,ref:Types.IProfileTypes.VENDOR+"s"},
 },{_id:false,timestamps:false});
-const userSchema = new Schema<AllTypes.IUser,UserModel,AllTypes.IUserMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IUserStatuses),AllTypes.IUserStatuses.NEW),
+const userSchema = new Schema<Types.IUser,User,Types.IUser>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IUserStatuses),Types.IUserStatuses.NEW),
   username:{type:String,sparse:true},
   name:{type:nameSchema},
   email: { type: String, unique: true, lowercase: true ,required:true},
@@ -36,10 +35,11 @@ const userSchema = new Schema<AllTypes.IUser,UserModel,AllTypes.IUserMethods>({
   profiles:{type:profilesSchema,default:{}},
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
+
 userSchema.plugin(uniqueValidator);
 //userSchema.method('fullName', function fullName() {return this.firstName + ' ' + this.lastName;});
 userSchema.methods.toAge = function toAge(){
-  const dob = CommonUtils.dateParserX(this.dob);
+  const dob = Utils.dateParserX(this.dob);
   if(dob){
     const yrInMS = 1000 * 60 * 60 * 24 * 365.25;
     const ageInMS = Date.now() - new Date(dob).getTime();
@@ -49,7 +49,7 @@ userSchema.methods.toAge = function toAge(){
   }
   else return null;
 };
-userSchema.methods.getUserContactByMethod = function(method:AllTypes.INotificationSendMethods){
+userSchema.methods.getUserContactByMethod = function(method:Types.INotificationSendMethods){
   let to: string | null = null;
   switch (method) {
     case 'email':
@@ -102,7 +102,7 @@ userSchema.virtual('status').get(function () {
   return this.statusUpdates[this.statusUpdates.length - 1].name;
 });
 userSchema.methods.json = function (role,auth) {
-  const json:AllTypes.IUserJson =  {...this.preview(role) as any};
+  const json:Types.IUserJson =  {...this.preview(role) as any};
   const profile = this.profiles[role] || null;
   if(auth) {
     json.username = this.username;
@@ -112,12 +112,13 @@ userSchema.methods.json = function (role,auth) {
     json.profile = profile?profile.json():{} as any;
     json.memberSince = this.createdOn as Date;
     json.lastUpdate = this.updatedOn as Date;
-    json.isMgr = this.id == (profile as AllTypes.IVendor).mgr;
+    json.isMgr = this.id == (profile as Types.IVendor).mgr;
     json.info = this.info;
   };
-  logger.log({json});
-  return json as AllTypes.IUserJson;
+  Utils.logger.log({json});
+  return json as Types.IUserJson;
 };
 
-const User = mongoose.model<AllTypes.IUser,UserModel>('users',userSchema);
+type User = Model<Types.IUser,{},Types.IUserMethods>;
+const User:User = mongoose.model<Types.IUser>('users',userSchema);
 export default User;

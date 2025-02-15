@@ -1,7 +1,7 @@
 import { CorsOptions } from "cors";
 import { SessionOptions } from 'express-session';
 import MongoStore from 'connect-mongo';
-import { AppError, logger } from "../utils";
+import { AppError } from "./common-models";
 
 const whitelist = JSON.parse(process.env.WHITELIST||"[]");
 const corsOptions:any = {

@@ -1,5 +1,5 @@
 import { Document } from "mongoose";
-import * as User from "./user";
+import * as User from "./user.types";
 import * as Products from "./products";
 
 
@@ -8,6 +8,12 @@ export enum IProfileTypes {
   COURIER = "courier",
   CUSTOMER = "customer",
   VENDOR = "vendor",
+}
+export enum IProfileModelNames {
+  ADMINS = "admins",
+  COURIERS = "couriers",
+  CUSTOMERS = "customers",
+  VENDORS = "vendors",
 }
 export enum IProfileStatuses {
   NEW = "new",
@@ -53,6 +59,8 @@ export type IInsuranceInfo = {
 
 /** Hashdash Customer Profile */
 export type ICustomerType = {
+  createdOn:string|Date;
+  updatedOn:string|Date;
   user:User.IUser;
   name:string;
   displayName?:string;
@@ -65,6 +73,7 @@ export type ICustomerType = {
   status:IProfileStatuses; 
   statusUpdates:Status<IProfileStatuses>[];
   cart:{item:Products.IProduct,qty:number}[];
+  reports:IContentReport[];
   info:any;
 };
 export interface ICustomerMethods {
@@ -75,6 +84,8 @@ export interface ICustomer extends ICustomerType,ICustomerMethods,Document{}
 
 /** Hashdash Vendor Profile */
 export type IVendorType = {
+  createdOn:string|Date;
+  updatedOn:string|Date;
   mgr:User.IUser;
   users:User.IUser[];
   name:string;
@@ -97,6 +108,8 @@ export type IVendorType = {
   bio?:string;
   title?:string;
   license?:ILicenseInfo;
+  tempPswd:{code:string;expires:Date}|null;
+  reports:IContentReport[];
   info:any;
 };
 export interface IVendorMethods {
@@ -109,6 +122,8 @@ export interface IVendor extends IVendorType,IVendorMethods,Document {}
 
 /** Hashdash Courier Profile */
 export type ICourierType = {
+  createdOn:string|Date;
+  updatedOn:string|Date;
   user:User.IUser;
   name:string;
   displayName?:string;
@@ -124,6 +139,7 @@ export type ICourierType = {
   statusUpdates:Status<IProfileStatuses>[];
   approvalUpdates:Status<IApprovalStatuses>[]; 
   approval:IApprovalStatuses;
+  reports:IContentReport[];
   info:any;
 };
 export interface ICourierMethods {
@@ -136,6 +152,8 @@ export interface ICourier extends ICourierType,ICourierMethods,Document {}
 
 /** Hashdash Admin Profile */
 export type IAdminType = { 
+  createdOn:string|Date;
+  updatedOn:string|Date;
   user:User.IUser;
   name:string;
   displayName?:string;
@@ -148,6 +166,7 @@ export type IAdminType = {
   statusUpdates:Status<IProfileStatuses>[];
   approvalUpdates:Status<IApprovalStatuses>[]; 
   approval:IApprovalStatuses;
+  reports:IContentReport[];
   info:any;
 };
 export interface IAdminMethods {
@@ -156,3 +175,33 @@ export interface IAdminMethods {
   json():Partial<IAdmin>;
 }
 export interface IAdmin extends IAdminType,IAdminMethods,Document {}
+
+// Artist Interface & Schema
+export interface IArtistType {
+  createdOn:string|Date;
+  updatedOn:string|Date;
+  name: string;
+  bio?: string;
+  profileImage?: string;
+  socialLinks?: { platform: string; url: string }[];
+  reports:IContentReport[];
+}
+
+export interface IArtistMethods {
+  //setStatus(name:IArtistStatuses,info?:any,save?:boolean):Promise<void>;
+  json():Partial<IArtist>;
+}
+export interface IArtist extends IArtistType,IArtistMethods,Document {}
+export type IProfiles = ICustomer|ICourier|IVendor|IAdmin|IArtist;
+// Report Item Type
+export type IContentReport = {
+  createdOn:string|Date;
+  updatedOn:string|Date;
+  user:IProfiles;
+  userRef:IProfileModelNames;
+  reason:string;
+  time:Date;
+  status:"new"|"under-review"|"accepted"|"rejected";
+  content:any
+  contentRef:string;
+};

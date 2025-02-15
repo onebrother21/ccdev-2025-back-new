@@ -1,6 +1,7 @@
 import { body, param, query } from 'express-validator';
 import { CheckValidation } from '../../middlewares';
-import { CommonUtils, currencyCodes } from '../../utils';
+import Types from "../../types";
+import Utils from '../../utils';
 
 
 const productTypes = ["sativa","indica","hybrid"];
@@ -9,12 +10,12 @@ const CreateProduct = [[
   body('data.sku').trim().escape().matches(/^[a-zA-Z0-9]{6,20}$/).withMessage('Invalid type').optional(),
   body('data.type').trim().escape().isIn(productTypes).withMessage('Invalid type').optional(),
   body('data.description').trim().escape().notEmpty().isLength({max:140}).withMessage('Invalid description').optional(),
-  body('data.concentration').isObject().custom(CommonUtils.notEmpty).withMessage('Invalid parameters'),
+  body('data.concentration').isObject().custom(Utils.notEmpty).withMessage('Invalid parameters'),
   body('data.concentration.amt').if(body('data.concentration').exists()).isFloat({gt:0}).withMessage('Invalid parameters'),
   body('data.concentration.unit').if(body('data.concentration').exists()).trim().escape().notEmpty().withMessage('Invalid parameters'),
-  body('data.price').custom(CommonUtils.notEmpty).withMessage('Invalid parameters'),
+  body('data.price').custom(Utils.notEmpty).withMessage('Invalid parameters'),
   body('data.price.amt').if(body('data.price').exists()).isFloat({gt:0}).withMessage('Invalid parameters'),
-  body('data.price.curr').if(body('data.price').exists()).isString().isIn(currencyCodes).withMessage('Invalid parameters'),
+  body('data.price.curr').if(body('data.price').exists()).isString().isIn(Utils.currencyCodes).withMessage('Invalid parameters'),
   body('data.price.per').if(body('data.price').exists()).trim().escape().notEmpty().withMessage('Invalid parameters'),
   body('data.receivedOn').isISO8601().withMessage('Invalid date'),
   body('data.expiration').isISO8601().withMessage('Invalid date'),

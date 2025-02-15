@@ -1,19 +1,19 @@
 import { Job } from 'bullmq';
-import { Notification,Courier,Order } from '../models';
-import * as AllTypes from "../types";
-import { calculateDistance, CommonUtils, createQueue,logger } from '../utils';
-import { NotificationService } from '../services';
+import Models from '../models';
+import Services from '../services';
+import Types from '../types';
+import Utils from '../utils';
 
 export const autoAssignCouriers = async (job:Job) => {
   try {
-    logger.info("Processing courier assignment...");
+    Utils.logger.info("Processing courier assignment...");
     // 1. Find all unassigned orders
-    const unassignedTypes = [AllTypes.IOrderStatuses.NEW,AllTypes.IOrderStatuses.PLACED];
-    const unassignedOrders = await Order.find({status:{ $in:unassignedTypes }}).populate("vendor");
+    const unassignedTypes = [Types.IOrderStatuses.NEW,Types.IOrderStatuses.PLACED];
+    const unassignedOrders = await Models.Order.find({status:{ $in:unassignedTypes }}).populate("vendor");
     for (const order of unassignedOrders) {
       const vendorLocation = order.vendor.location;
       // 2. Find available couriers within range
-      const availableCouriers = await Courier.find({
+      const availableCouriers = await Models.Courier.find({
         isAvailable: true,
         location: {
           $near: {
@@ -26,7 +26,7 @@ export const autoAssignCouriers = async (job:Job) => {
       const sortedCouriers = availableCouriers
         .map(courier => ({
           courier,
-          distance: calculateDistance(
+          distance: Utils.calculateDistance(
             vendorLocation.coordinates,
             courier.location.coordinates,
             {unit:"mi",toFixed:4}
@@ -38,12 +38,12 @@ export const autoAssignCouriers = async (job:Job) => {
       for (const { courier } of sortedCouriers) {
         if (!order.rejectedBy.includes(courier.id)) {
           order.courier = courier._id as any;
-          order.setStatus(AllTypes.IOrderStatuses.ASSIGNED,null,true);
+          order.setStatus(Types.IOrderStatuses.ASSIGNED,null,true);
           // Notify the courier
-          const notificationMethod = AllTypes.INotificationSendMethods.PUSH;
+          const notificationMethod = Types.INotificationSendMethods.PUSH;
           const notificationData = {orderId:order.id};
-          await NotificationService.createNotification("COURIER_ASSIGNED",notificationMethod,[courier.user],notificationData);
-          logger.info(`Order ${order._id} assigned to Courier ${courier._id}`);
+          await Services.Notification.createNotification("COURIER_ASSIGNED",notificationMethod,[courier.user],notificationData);
+          Utils.logger.info(`Order ${order._id} assigned to Courier ${courier._id}`);
           break;
         }
       }

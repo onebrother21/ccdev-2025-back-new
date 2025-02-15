@@ -1,46 +1,59 @@
-import { AppError, CommonUtils, createQueue } from '../../utils';
-import * as AllTypes from "../../types";
+import Utils from '../../utils';
+import Types from "../../types";
+import Services from '../../services';
 
-import { NotificationService } from '../../services';
-
-
-const randomSleepQ = createQueue("random-sleep");
-const scheduleNotificationsQ = createQueue("schedule-notifications");
-const autoAssignCouriersQ = createQueue("auto-assign-couriers");
-const bulkEditCollectionQ = createQueue("bulk-edit-collection");
+const randomSleepQ = Utils.createQueue("random-sleep");
+const scheduleNotificationsQ = Utils.createQueue("schedule-notifications");
+const autoAssignCouriersQ = Utils.createQueue("auto-assign-couriers");
+const bulkEditCollectionQ = Utils.createQueue("bulk-edit-collection");
+const logDataQ = Utils.createQueue("log-data");
 
 export class AdminOpsService {
-  static postJob = async (user:AllTypes.IUser,{type,opts:{delay,every} = {},data}:any) => {
+  static postJob = async (user:Types.IUser,{type,opts:{delay,every} = {},data}:any) => {
     const opts:any = {};
+    let result;
     switch(type){
       case "doRandomSleep":{
-        if(!delay) throw new AppError(422,"operation failed");
+        if(!delay) throw new Utils.AppError(422,"operation failed");
         opts.delay = delay * 1000; // Convert seconds to milliseconds
-        await randomSleepQ.add('sleep-job', { title:data.title }, opts);
-        return {message:`Random sleep processor added`};
+        const job = await randomSleepQ.add('sleep-job', { title:data.title }, opts);
+        result = {message:`Random sleep processor added, Job: ${job.id}`};
+        break;
       }
       case "scheduleNotifications":{
-        if(!every) throw new AppError(422,"operation failed");
+        if(!every) throw new Utils.AppError(422,"operation failed");
         opts.repeat = {every:every * 60 * 1000}; // Convert minutes to milliseconds
-        scheduleNotificationsQ.add('schedule-notifications-job',{},opts);
-        return {message:`Notification processor on repeat every ${every} ms.`};
+        const job = await scheduleNotificationsQ.add('schedule-notifications-job',{},opts);
+        result =  {message:`Notification processor on repeat every ${every} ms, Job: ${job.id}`};
+        break;
       }
       case "autoAssignCouriers":{
-        if(!every) throw new AppError(422,"operation failed");
+        if(!every) throw new Utils.AppError(422,"operation failed");
         opts.repeat = {every:every * 60 * 1000}; // Convert minutes to milliseconds
-        autoAssignCouriersQ.add('auto-assign-couriers-job',{},opts);
-        return {success: true,message:`Auto assigning couriers on repeat every ${every} ms.`};
+        const job = await autoAssignCouriersQ.add('auto-assign-couriers-job',{},opts);
+        result =  {success: true,message:`Auto assigning couriers on repeat every ${every} ms, Job: ${job.id}`};
+        break;
       }
       case "bulkEditCollection":{
-        if(!(data.modelName && data.newProps)) throw new AppError(422,"operation failed");
-        bulkEditCollectionQ.add('bulk-edit-collection-job',data,opts);
-        return {success: true,message:`Bulk Edit: ${data.modelName.toLocaleUpperCase()} -> Submitted`};
+        if(!(data.modelName && data.newProps)) throw new Utils.AppError(422,"operation failed");
+        const job = await bulkEditCollectionQ.add('bulk-edit-collection-job',data,opts);
+        result =  {success: true,message:`Bulk Edit: ${data.modelName.toLocaleUpperCase()} -> Submitted, Job: ${job.id}`};
+        break;
       }
+      case "logData":{
+        if(!data) throw new Utils.AppError(422,"operation failed");
+        const job = await logDataQ.add('log-data-job',data,opts);
+        const jobId = job.id || "Unknown";
+        result =  {success: true,message:`Log Data -> SUBMITTED, Job: ${jobId}`};
+        break;
+      }
+      default:throw new Utils.AppError(400,"no worker found");
     }
     //send registration notification
-    const notificationMethod = AllTypes.INotificationSendMethods.SMS;
+    const notificationMethod = Types.INotificationSendMethods.SMS;
     const notificationData = {type};
-    await NotificationService.createNotification("SYSTEM_ALERT",notificationMethod,[user.id],notificationData);
+    await Services.Notification.createNotification("SYSTEM_ALERT",notificationMethod,[user.id],notificationData);
+    return result;
   };
   
   //🔹 Business Management

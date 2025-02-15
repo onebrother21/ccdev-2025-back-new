@@ -1,14 +1,14 @@
-import { ProductsService } from '../../services';
-import { Product } from '../../models';
-import { AppError, logger } from '../../utils';
-import * as AllTypes from "../../types";
+import Models from '../../models';
+import Services from '../../services';
+import Types from "../../types";
+import Utils from '../../utils';
 
 export class ProductMgmtController {
   static CreateProduct:IHandler = async (req,res,next) => {
-    const user = req.user as AllTypes.IUser;
-    const role = user.role as AllTypes.IProfileTypes;
+    const user = req.user as Types.IUser;
+    const role = user.role as Types.IProfileTypes;
     try {
-      const { product } = await ProductsService.createProduct(user,role,req.body.data);
+      const { product } = await Services.Product.createProduct(user,role,req.body.data);
       res.locals = { status: 201, success: true, data: product.json() };
       next();
     } catch (e) {
@@ -16,16 +16,16 @@ export class ProductMgmtController {
     }
   };
   static GetProduct:IHandler = async (req,res,next) => {
-    logger.here();
+    Utils.logger.here();
     try {
-      const {product} = await ProductsService.getProduct(req.params.productId);
+      const {product} = await Services.Product.getProduct(req.params.productId);
       res.locals = { success: true, data: product.json() };
       next();
     } catch (e) {next(e);}
   };
   static UpdateProduct:IHandler = async (req,res,next) => {
     try {
-      const { product } = await ProductsService.updateProduct(req.params.productId,req.body.data);
+      const { product } = await Services.Product.updateProduct(req.params.productId,req.body.data);
       res.locals = { success: true, data: product.json() };
       next();
     } catch (e) {
@@ -34,7 +34,7 @@ export class ProductMgmtController {
   };
   static DeleteProduct:IHandler = async (req,res,next) => {
     try {
-      const { ok } = await ProductsService.deleteProduct(req.params.id);
+      const { ok } = await Services.Product.deleteProduct(req.params.id);
       res.locals = { success: true, message: 'Product deleted' };
       next();
     } catch (e) {
@@ -42,9 +42,9 @@ export class ProductMgmtController {
     }
   };
   static QueryProducts:IHandler = async (req,res,next) => {
-    logger.here();
+    Utils.logger.here();
     try {
-      const results = await Product.find(req.query);
+      const results = await Models.Product.find(req.query);
       res.locals = { success: true, data:{results:results.map((p) => p.json()) }};
       next();
     } catch (e) {
@@ -53,7 +53,7 @@ export class ProductMgmtController {
   };
   static QueryProductsByVendor:IHandler = async (req,res,next) => {
     try {
-      const {results} = await ProductsService.queryByVendor(req.query.vendorId as string);
+      const {results} = await Services.Product.queryByVendor(req.query.vendorId as string);
       res.locals = { success: true, data:{results:results.map((p) => p.json()) }};
       next();
     } catch (e) {
@@ -63,7 +63,7 @@ export class ProductMgmtController {
   static QueryProductsByDetails:IHandler = async (req,res,next) => {
     try{
       const {q,s,o,t} = JSON.parse(req.query.q as string);
-      const {results} = await ProductsService.queryProductsByDetails(q,s,o,t);
+      const {results} = await Services.Product.queryProductsByDetails(q,s,o,t);
       res.locals = {success:true,data:{results}};
       next();
     } catch(e){ next(e); }

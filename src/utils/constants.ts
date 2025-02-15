@@ -1,5 +1,3 @@
-import * as AllTypes from "../types";
-
 export const stateAbbreviations = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
   "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",

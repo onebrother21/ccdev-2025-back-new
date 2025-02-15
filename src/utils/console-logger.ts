@@ -1,5 +1,5 @@
 import { AppError } from "./common-models";
-import CommonUtils from "./common-utils";
+import * as Utils from "./common-utils";
 
 type LogTypes = |"log"|"warn"|"error"|"info"|"ok"|"trace"|"reset"|"here"|"debug"|"maroon";
 type ColorTypes = |"grey"|"red"|"green"|"yellow"|"blue"|"magenta"|"default"|"white";
@@ -41,11 +41,11 @@ class ConsoleLogger {
     return {functionName,fileInfo};
   };
   private static write = (k:LogTypes,...args:any[]):boolean => {
-    const test = CommonUtils.isEnv(["test"]);
-    const verbose = CommonUtils.isEnv("verbose");
+    const test = Utils.isEnv(["test"]);
+    const verbose = Utils.isEnv("verbose");
     const okErrOrWarn = ["ok","error","warn"].includes(k);
     const iserror = k == "error";
-    const isProd = CommonUtils.isProd();
+    const isProd = Utils.isProd();
     const flag = `⚡️ [app-logger-${k}]:`;
     const {functionName,fileInfo} = this.here_();
     const color = this.colors[k];
@@ -63,7 +63,7 @@ class ConsoleLogger {
     return true;
   };
   static print = (title:string,...args:any[]):boolean => {
-    const isProd = CommonUtils.isProd();
+    const isProd = Utils.isProd();
     const flag = `⚡️ [${title}]:`;
     const color = this.colors.debug;
     const reset = this.colors.reset;

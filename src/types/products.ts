@@ -1,5 +1,5 @@
 import { Document } from "mongoose";
-import * as User from "./user";
+import * as User from "./user.types";
 import * as Profiles from "./profiles";
 
 export enum IProductStatuses {

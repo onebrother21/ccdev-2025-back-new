@@ -1,8 +1,7 @@
 import { Schema } from "mongoose";
-import { Order,Customer,Courier } from '../models';
-import { AppError } from '../utils';
-import { Notification } from "../models";
-import * as AllTypes from "../types";
+import Models from '../models';
+import Types from "../types";
+import Utils from '../utils';
 
 type ObjectId = Schema.Types.ObjectId;
 
@@ -10,7 +9,7 @@ export class ReportsService {
     
   /** Generates sales reports for vendors within a given date range */
   static async generateSalesReport(vendorId: string, startDate: Date, endDate: Date) {
-    const salesReport = await Order.aggregate([
+    const salesReport = await Models.Order.aggregate([
       { $match: { vendor: vendorId, createdAt: { $gte: startDate, $lte: endDate }, status: 'completed' } },
       { $group: { _id: '$vendor', totalRevenue: { $sum: '$totalPrice' }, totalOrders: { $sum: 1 } } }
     ]);
@@ -20,7 +19,7 @@ export class ReportsService {
 
   /** Retrieves order trends for vendors to analyze peak ordering times */
   static async getOrderTrends(vendorId: string) {
-    return await Order.aggregate([
+    return await Models.Order.aggregate([
       { $match: { vendor: vendorId, status: 'completed' } },
       { $group: { _id: { $dayOfWeek: '$createdAt' }, orderCount: { $sum: 1 } } },
       { $sort: { '_id': 1 } }
@@ -29,7 +28,7 @@ export class ReportsService {
 
   /** Provides insights into vendor customer behavior & preferences */
   static async getCustomerInsights(vendorId: string) {
-    return await Customer.aggregate([
+    return await Models.Customer.aggregate([
       { $lookup: { from: 'orders', localField: '_id', foreignField: 'customer', as: 'orders' } },
       { $unwind: '$orders' },
       { $match: { 'orders.vendor': vendorId } },
@@ -40,7 +39,7 @@ export class ReportsService {
 
   /** Generates earnings reports for couriers over a date range */
   static async getEarningsReport(courierId: string, startDate: Date, endDate: Date) {
-    const earnings = await Order.aggregate([
+    const earnings = await Models.Order.aggregate([
       { $match: { courier: courierId, completedAt: { $gte: startDate, $lte: endDate }, status: 'delivered' } },
       { $group: { _id: '$courier', totalEarnings: { $sum: '$deliveryFee' }, totalDeliveries: { $sum: 1 } } }
     ]);
@@ -50,7 +49,7 @@ export class ReportsService {
 
   /** Analyzes courier delivery statistics */
   static async getOrderDeliveryStats(courierId: string) {
-    return await Order.aggregate([
+    return await Models.Order.aggregate([
       { $match: { courier: courierId } },
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
@@ -58,6 +57,6 @@ export class ReportsService {
 
   /** Fetches customer ratings for a specific courier */
   static async getCustomerRatings(courierId: string) {
-    return await Courier.findById(courierId).select('ratings').lean();
+    return await Models.Courier.findById(courierId).select('ratings').lean();
   }
 }

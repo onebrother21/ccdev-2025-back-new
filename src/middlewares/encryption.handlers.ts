@@ -1,4 +1,4 @@
-import { CommonUtils } from '../utils';
+import Utils from '../utils';
 
 const DecryptData:IHandler = (req,res,next) => {
   try {
@@ -11,7 +11,7 @@ const DecryptData:IHandler = (req,res,next) => {
       res.status(400).json({succes:false,message: 'No encrypted data provided' });
     }
     else {
-      req.body.data = CommonUtils.decrypt(data);
+      req.body.data = Utils.decrypt(data);
       next();
     }
   }
@@ -26,7 +26,7 @@ const DecryptData:IHandler = (req,res,next) => {
 };
 const EncryptData:IHandler = (req, res,next) => {
   try {
-    if(res.locals.data) res.locals.data = CommonUtils.encrypt(res.locals.data);
+    if(res.locals.data) res.locals.data = Utils.encrypt(res.locals.data);
     next();
   }
   catch (error) {

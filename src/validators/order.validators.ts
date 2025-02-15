@@ -1,6 +1,6 @@
 import { body,oneOf } from "express-validator";
-import { CommonUtils, stateAbbreviations } from "../utils";
 import { CheckValidation } from "../middlewares";
+import Utils from "utils";
 
 /*
 customer:IUser;               // ID of the customer placing the order
@@ -24,10 +24,10 @@ const OrderValidators = {
   CreateOrder:[[
     body('data.total').isFloat({gt:0}).withMessage('Invalid total amount'),
     body('data.description').trim().escape().notEmpty().withMessage('Invalid description').optional(),
-    body('data.deliveryAddress').isObject().custom(CommonUtils.notEmpty).withMessage('Invalid address info'),
+    body('data.deliveryAddress').isObject().custom(Utils.notEmpty).withMessage('Invalid address info'),
     body('data.deliveryAddress.streetAddr').if(body('data.deliveryAddress').exists()).trim().escape().matches(/^\d+\s[\w\s,\.]+$/).withMessage('Invalid address info'),
     body('data.deliveryAddress.city').if(body('data.deliveryAddress').exists()).trim().escape().notEmpty().withMessage('Invalid address info'),
-    body('data.deliveryAddress.state').if(body('data.deliveryAddress').exists()).trim().escape().isIn(stateAbbreviations).withMessage('Invalid address info'),
+    body('data.deliveryAddress.state').if(body('data.deliveryAddress').exists()).trim().escape().isIn(Utils.stateAbbreviations).withMessage('Invalid address info'),
     body('data.deliveryAddress.postal').if(body('data.deliveryAddress').exists()).trim().escape().isPostalCode("US").withMessage('Invalid address info'),
     body('data.deliveryAddress.country').if(body('data.deliveryAddress').exists()).trim().escape().equals("USA").withMessage('Invalid address info'),
     body('data.scheduledFor').isISO8601().isAfter(new Date().toISOString()).withMessage('Invalid date'),
@@ -42,10 +42,10 @@ const OrderValidators = {
   UpdateOrder:[[
     body('data.total').isFloat({gt:0}).withMessage('Invalid total amount').optional(),
     body('data.description').trim().escape().notEmpty().withMessage('Invalid description').optional(),
-    body('data.deliveryAddress').isObject().custom(CommonUtils.notEmpty).withMessage('Invalid address info').optional(),
+    body('data.deliveryAddress').isObject().custom(Utils.notEmpty).withMessage('Invalid address info').optional(),
     body('data.deliveryAddress.streetAddr').if(body('data.deliveryAddress').exists()).trim().escape().matches(/^\d+\s[\w\s,\.]+$/).withMessage('Invalid address info').optional(),
     body('data.deliveryAddress.city').if(body('data.deliveryAddress').exists()).trim().escape().notEmpty().withMessage('Invalid address info').optional(),
-    body('data.deliveryAddress.state').if(body('data.deliveryAddress').exists()).trim().escape().isIn(stateAbbreviations).withMessage('Invalid address info').optional(),
+    body('data.deliveryAddress.state').if(body('data.deliveryAddress').exists()).trim().escape().isIn(Utils.stateAbbreviations).withMessage('Invalid address info').optional(),
     body('data.deliveryAddress.postal').if(body('data.deliveryAddress').exists()).trim().escape().isPostalCode("US").withMessage('Invalid address info').optional(),
     body('data.deliveryAddress.country').if(body('data.deliveryAddress').exists()).trim().escape().equals("USA").withMessage('Invalid address info').optional(),
     body('data.scheduledFor').isISO8601().isAfter(new Date().toISOString()).withMessage('Invalid date').optional(),

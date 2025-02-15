@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { SendJson } from '../../middlewares';
-import { CommonUtils } from '../../utils';
+import Utils from '../../utils';
 
 const AppPublicRouter = Router();
 
@@ -16,7 +16,7 @@ AppPublicRouter.get('/decrypt',(req, res) => {
       });
     }
     else {
-      const decryptedData = CommonUtils.decrypt(encryptedData);
+      const decryptedData = Utils.decrypt(encryptedData);
       res.json({success:true,...decryptedData});
     }
   }
@@ -31,7 +31,7 @@ AppPublicRouter.get('/decrypt',(req, res) => {
 AppPublicRouter.get('/encrypt',(req, res) => {
   try {
     const data = { message: 'This is sensitive data' };
-    const encryptedData = CommonUtils.encrypt(data);
+    const encryptedData = Utils.encrypt(data);
     res.json({success:true,data:encryptedData});
   }
   catch (error) {

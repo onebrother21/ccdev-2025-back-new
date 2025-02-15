@@ -1,4 +1,3 @@
-import { CommonUtils } from "../utils";
 import { doubleCsrf, DoubleCsrfConfigOptions } from "csrf-csrf";
 
 

@@ -1,13 +1,12 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import { getStatusArraySchema, noteSchema } from "../utils";
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from '../utils';
 
-type TaskModel = Model<AllTypes.ITask,{},AllTypes.ITaskMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
-const taskSchema = new Schema<AllTypes.ITask,TaskModel,AllTypes.ITaskMethods>({
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.ITaskStatuses),AllTypes.ITaskStatuses.NEW),
+const taskSchema = new Schema<Types.ITask,Task,Types.ITaskMethods>({
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.ITaskStatuses),Types.ITaskStatuses.NEW),
   creator:{type:ObjectId,ref:"users",required:true},
   category: { type: String,required:true},
   type: { type: String,required:true},
@@ -21,9 +20,10 @@ const taskSchema = new Schema<AllTypes.ITask,TaskModel,AllTypes.ITaskMethods>({
   resolution:{ type: String,maxlength:140},
   reason:{ type: String},
   tasks:[{type:ObjectId,ref:"tasks"}],
-  notes:[noteSchema],
+  notes:[Utils.noteSchema],
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
+
 taskSchema.plugin(uniqueValidator);
 taskSchema.virtual('status').get(function () {
   return this.statusUpdates[this.statusUpdates.length - 1].name;
@@ -44,7 +44,7 @@ taskSchema.methods.preview = function () {
   };
 };
 taskSchema.methods.json = function () {
-  const json:Partial<AllTypes.ITask> =  {};
+  const json:Partial<Types.ITask> =  {};
   json.id = this._id.toString();
   json.creator = this.creator.json() as any,
   json.category = this.category;
@@ -54,8 +54,8 @@ taskSchema.methods.json = function () {
   json.recurring = this.recurring;
   json.recurringInterval = this.recurringInterval;
   json.amt = this.amt;
-  json.tasks = this.tasks.map(o => o.preview() as AllTypes.ITask);
-  json.notes = this.notes.map(o => o.json()) as AllTypes.INote[];
+  json.tasks = this.tasks.map(o => o.preview() as Types.ITask);
+  json.notes = this.notes.map(o => o.json()) as Types.INote[];
   json.status = this.status;
   json.progress = this.progress;
   json.resolution = this.resolution;
@@ -63,8 +63,9 @@ taskSchema.methods.json = function () {
   json.dueOn = this.dueOn;
   json.info = this.info;
   json.createdOn = this.createdOn;
-  return json as AllTypes.ITask;
+  return json as Types.ITask;
 };
 
-const Task = mongoose.model<AllTypes.ITask,TaskModel>('tasks',taskSchema);
+type Task = Model<Types.ITask,{},Types.ITaskMethods>;
+const Task:Task = mongoose.model<Types.ITask>('tasks',taskSchema);
 export default Task;

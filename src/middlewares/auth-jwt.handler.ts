@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { User } from '../models';
-import { logger } from '../utils';
+import Models from '../models';
+import Utils from '../utils';
+import Types from 'types';
 
 const jwtSecret = process.env.JWT_KEY || "";
 const auth:IHandler = async (req,res,next) => {
@@ -10,23 +11,25 @@ const auth:IHandler = async (req,res,next) => {
     const parts = isTokenStr?header.split("Bearer "):[];
     const token = parts[1];
     if(token){
-      const decoded = jwt.verify(token,jwtSecret) as IAppCreds & {expires:string|number|Date};
-      const user = await User.findById(decoded.id);
+      const decoded = jwt.verify(token,jwtSecret) as Types.IAuthToken;
+      const user = await Models.User.findById(decoded.id);
+      Utils.logger.log(decoded);
+      if(!user) throw new Utils.AppError(401,"Unauthorized!");
       await user.populate(`profiles.${decoded.role}`);
-      res.locals.tokenExp = decoded.expires;
+      res.locals.tokenStub = decoded.sub;
       req.user = user;
       req.user.role = decoded.role;
       req.profile = user.profiles[decoded.role];
       req.token = token;
       next();
     }
-    else res.status(401).send({success: false,message: 'Unauthorized'});
+    else throw new Utils.AppError(401,'Unauthorized');
   }
   catch(e){
-    e.message = 'Please, Login.';
-    res.status(403).send({
+    res.status(400).send({
       success: false,
       message: 'Please, Login.',
+      error:e
     });
   }
 };

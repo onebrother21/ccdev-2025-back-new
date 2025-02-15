@@ -1,34 +1,34 @@
-import { AppError, calculateDistance, CommonUtils, logger } from '../utils';
-import { Product } from '../models';
-import * as AllTypes from "../types";
+import Models from '../models';
+import Types from "../types";
+import Utils from '../utils';
 
 export class ProductsService {
-  static createProduct = async (user:AllTypes.IUser,role:AllTypes.IProfileTypes,newProduct:Partial<AllTypes.IProduct>) =>  {
-    const profile = user.profiles[role] as AllTypes.IVendor;
-    const product = new Product({creator:profile.id,creatorRef:role+"s",location:profile.location,...newProduct});
+  static createProduct = async (user:Types.IUser,role:Types.IProfileTypes,newProduct:Partial<Types.IProduct>) =>  {
+    const profile = user.profiles[role] as Types.IVendor;
+    const product = new Models.Product({creator:profile.id,creatorRef:role+"s",location:profile.location,...newProduct});
     await product.save();
     await product.populate("creator");
     return {product};
   }
   static getProduct = async (productId:string) => {
-    const product = await Product.findById(productId);
-    if(!product) throw new AppError(422,'Requested product not found');
+    const product = await Models.Product.findById(productId);
+    if(!product) throw new Utils.AppError(422,'Requested product not found');
     await product.populate("creator");
     return {product};
   }
   static updateProduct = async (productId:string,updates:any) => {
-    const product = await Product.findByIdAndUpdate(productId,{ $set: updates },{new:true,runValidators:true});
-    if (!product) throw new AppError(422,'Requested product not found');
+    const product = await Models.Product.findByIdAndUpdate(productId,{ $set: updates },{new:true,runValidators:true});
+    if (!product) throw new Utils.AppError(422,'Requested product not found');
     await product.populate("creator");
     return {product};
   };
   static deleteProduct = async (productId:string) => {
-    const product = await Product.findByIdAndDelete(productId);
-    if (!product) throw new AppError(422,'Requested product not found');
+    const product = await Models.Product.findByIdAndDelete(productId);
+    if (!product) throw new Utils.AppError({status:422,message:'Requested product not found'});
     return {ok:true};
   };
   static queryByVendor = async (vendorId:string) => {
-    const products = await Product.find({ creator:vendorId });
+    const products = await Models.Product.find({ creator:vendorId });
     return {results:products};
   };
   static queryProductsByDetails = async ({location,...query_}:any,select:string[],opts?:any,timestamp?:number) => {
@@ -89,13 +89,13 @@ export class ProductsService {
         ...(select.includes("creator")?{creator: { id: "$creator._id",name: "$creator.name",username:"$creator.displayName" }}:{}),
       }}
     );
-    const results_ = await Product.aggregate(pipeline);
+    const results_ = await Models.Product.aggregate(pipeline);
     const results = !location?results_:results_.map(o => ({
       ...o,
-      ...(select.includes("dist")?{dist:calculateDistance(pts,o.loc,{unit,toFixed:4})}:{}),
+      ...(select.includes("dist")?{dist:Utils.calculateDistance(pts,o.loc,{unit,toFixed:4})}:{}),
       ...(select.includes("distUnit")?{distUnit:unit}:{}),
     }));
-    results.sort(CommonUtils.sortBy("dist"));
+    results.sort(Utils.sortBy("dist"));
     return { results };
   };
 }

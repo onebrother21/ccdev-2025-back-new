@@ -1,4 +1,5 @@
-import { calculateDistance } from '../../utils';
+
+import Utils from '../../utils';
 import { CourierMgmtService } from "./service";
 
 export class CourierAssignmentController {

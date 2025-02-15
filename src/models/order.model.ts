@@ -1,25 +1,24 @@
 import mongoose,{Schema,Model} from 'mongoose';
 import uniqueValidator from "mongoose-unique-validator";
-import { noteSchema, getStatusArraySchema, getStatusSchema,stateAbbreviations, stateSalesTaxRates } from '../utils';
-import * as AllTypes from "../types";
+import Types from "../types";
+import Utils from '../utils';
 
-type OrderModel = Model<AllTypes.IOrder,{},AllTypes.IOrderMethods>;
 const ObjectId = Schema.Types.ObjectId;
 
 const addressSchema = new Schema<AddressObj>({
   streetAddr: { type: String,required:true,validate:/^\d+\s[\w\s,\.]+$/},
   city: { type: String,required:true},
-  state: { type: String,required:true,enum:[...stateAbbreviations]},
+  state: { type: String,required:true,enum:[...Utils.stateAbbreviations]},
   postal: { type: String,required:true},
   country: { type: String,required:true},
 },{_id:false,timestamps:false});
-const itemSchema = new Schema<AllTypes.IOrder["items"][0]>({
+const itemSchema = new Schema<Types.IOrder["items"][0]>({
   name: { type: String,required:true},
   qty: { type: Number,required:true},
   price: { type: Number,required:true},
   itemId:{type:ObjectId,ref:"products"},
 },{_id:false,timestamps:false});
-const chargesSchema = new Schema<AllTypes.IOrderCharges>({
+const chargesSchema = new Schema<Types.IOrderCharges>({
   subtotal:{ type: Number,required:true},
   serviceFee: { type: Number,required:true},
   deliveryFee: { type: Number,required:true},
@@ -29,9 +28,9 @@ const chargesSchema = new Schema<AllTypes.IOrderCharges>({
   total:{ type: Number,required:true},
 },{_id:false,timestamps:false});
 
-const orderSchema = new Schema<AllTypes.IOrder,OrderModel,AllTypes.IOrderMethods>({
+const orderSchema = new Schema<Types.IOrder,Order,Types.IOrder>({
   reqno:{type:Number,required:true},
-  statusUpdates:getStatusArraySchema(Object.values(AllTypes.IOrderStatuses),AllTypes.IOrderStatuses.NEW),
+  statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IOrderStatuses),Types.IOrderStatuses.NEW),
   customer:{type:ObjectId,ref:"customers",required:true},
   vendor:{type:ObjectId,ref:"vendors",required:true},
   courier:{type:ObjectId,ref:"couriers"},
@@ -52,7 +51,7 @@ const orderSchema = new Schema<AllTypes.IOrder,OrderModel,AllTypes.IOrderMethods
     total:0
   })},
   tasks:[{type:ObjectId,ref:"tasks"}],
-  notes:[noteSchema],
+  notes:[Utils.noteSchema],
   activity:{type:[Object]},
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
@@ -66,16 +65,16 @@ orderSchema.methods.setStatus = async function (name,info,save){
   this.status = status.name;
   if(save) await this.save();
 };
-orderSchema.methods.runBusinessLogic = async function(bvars:any) {
+orderSchema.methods.calculateCharges = async function(bvars:any) {
   if(bvars && bvars.rates){
     const subtotal = this.items.reduce((o,p) => o + p.price * p.qty,0);
     const serviceFee = (bvars.rates.service || 0) * subtotal;
     const deliveryFee = (bvars.rates.delivery || 0) * subtotal;
     const adminFees = (bvars.rates.admin || 0) * subtotal;
     const subtotalAndFees = subtotal + serviceFee + deliveryFee + adminFees;
-    const salesStateObj = stateSalesTaxRates.filter(o => o.abbr == this.deliveryAddress.state)[0];
+    const salesStateObj = Utils.stateSalesTaxRates.filter(o => o.abbr == this.deliveryAddress.state)[0];
     const taxRate = salesStateObj?salesStateObj.rate:null;
-    if(taxRate == null){
+    if(taxRate === null){
       this.charges = null;
       this.total = null;
     }
@@ -84,18 +83,18 @@ orderSchema.methods.runBusinessLogic = async function(bvars:any) {
       const tip = this.charges?.tip || 0;
       const total = subtotalAndFees + salesTax + tip;
       const charges = {subtotal,serviceFee,deliveryFee,adminFees,salesTax,tip,total};
-      this.charges = Object.keys(charges).reduce((o,k) => ({...o,[k]:Number((charges[k] as number).toFixed(2)),}),{}) as AllTypes.IOrderCharges;
+      this.charges = Object.keys(charges).reduce((o,k) => ({...o,[k]:Number((charges[k] as number).toFixed(2)),}),{}) as Types.IOrderCharges;
       this.total = this.charges.total;
     }
   }
   await this.save();
 };
 orderSchema.methods.json = function () {
-  const json:Partial<AllTypes.IOrder> =  {};
+  const json:Partial<Types.IOrder> =  {};
   json.id = this.id;
-  json.customer = this.customer.json() as AllTypes.ICustomer;
-  json.vendor = this.vendor.json() as AllTypes.IVendor;
-  json.courier = this.courier?this.courier.json() as AllTypes.ICourier:null;
+  json.customer = this.customer.json() as Types.ICustomer;
+  json.vendor = this.vendor.json() as Types.IVendor;
+  json.courier = this.courier?this.courier.json() as Types.ICourier:null;
   json.description = this.description;
   json.status = this.status;
   json.total = this.total;
@@ -109,8 +108,9 @@ orderSchema.methods.json = function () {
   json.charges = this.charges;
   json.info = this.info;
   json.createdOn = this.createdOn;
-  return json as AllTypes.IOrder;
+  return json as Types.IOrder;
 };
 
-const Order = mongoose.model<AllTypes.IOrder,OrderModel>('orders',orderSchema);
+type Order = Model<Types.IOrder,{},Types.IOrderMethods>;
+const Order:Order = mongoose.model<Types.IOrder>('orders',orderSchema);
 export default Order;

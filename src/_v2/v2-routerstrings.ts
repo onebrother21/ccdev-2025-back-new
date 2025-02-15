@@ -17,30 +17,6 @@ export const V2Routes = {
     UpdateVendorProfile: '/vendor/update',
     UpdateAdminProfile: '/admin/update',
   },
-  Products: {
-    CreateProduct: '/',
-    QueryProducts: '/',
-    QueryProductsByVendor: '/vendor',
-    QueryProductsByDetails: '/details',
-    GetProduct: '/:productId',
-    UpdateProduct: '/:productId',
-    DeleteProduct: '/:productId',
-  },
-  Orders: {
-    Create: '/orders',
-    Update: '/orders/:orderId',
-    Cancel: '/orders/:orderId/cancel',
-    Fulfill: '/orders/:orderId/fulfill',
-    GetByUser: '/orders/user',
-    GetByVendor: '/orders/vendor',
-  },
-  CourierAssignment: {
-    FindAvailable: 's/available',
-    AssignCourier: 's/assign',
-    AcceptOrder: 's/:orderId/accept',
-    RejectOrder: 's/:orderId/reject',
-    FulfillOrder: 's/:orderId/fulfill',
-  },
   VendorOps:{
     profile: {
       register: '/register',
@@ -49,40 +25,40 @@ export const V2Routes = {
       delete: '/profile',
       deleteX: '/delete'
     },
-    product: {
+    products: {
       create: '/products',
       update: '/products/:productId',
       delete: '/products/:productId',
       list: '/products'
     },
     order: {
-        list: '/orders',
-        accept: '/order/:orderId/accept',
-        reject: '/order/:orderId/reject',
-        markReady: '/order/:orderId/ready',
-        details: '/order/:orderId',
-        updateStatus: '/order/:orderId/status'
+      list: '/orders',
+      accept: '/order/:orderId/accept',
+      reject: '/order/:orderId/reject',
+      markReady: '/order/:orderId/ready',
+      details: '/order/:orderId',
+      updateStatus: '/order/:orderId/status'
     },
     courier: {
-        assign: '/order/:orderId/assign-courier',
-        track: 's',
-        pending: '/orders/pending-couriers',
-        cancel: '/order/:orderId/cancel-courier'
+      assign: '/order/:orderId/assign-courier',
+      track: 's',
+      pending: '/orders/pending-couriers',
+      cancel: '/order/:orderId/cancel-courier'
     },
     notifications: {
-        orderUpdate: '/notify/order-update',
-        broadcast: '/notify/broadcast',
-        list: '/notifications'
+      orderUpdate: '/notify/order-update',
+      broadcast: '/notify/broadcast',
+      list: '/notifications'
     },
     analytics: {
-        salesReport: '/analytics/sales',
-        orderTrends: '/analytics/trends',
-        customerInsights: '/analytics/customers'
+      salesReport: '/analytics/sales',
+      orderTrends: '/analytics/trends',
+      customerInsights: '/analytics/customers'
     },
     settings: {
-        businessHours: '/settings/business-hours',
-        autoAccept: '/settings/auto-accept',
-        courierPrefs: '/settings/preferences'
+      businessHours: '/settings/business-hours',
+      autoAccept: '/settings/auto-accept',
+      courierPrefs: '/settings/preferences'
     }
   },
   CourierOps:{
@@ -216,11 +192,86 @@ export const V2Routes = {
       manageSupportTickets:"/support/msgs",
     },
     jobs:{
-      create:"/jobs"
+      create:"/jobs",
+      logVars:"/jobs/bvars"
     },
     notifications: {
       orderUpdate: '/notify/order-update',
       list: '/notifications'
     },
+  },
+  LivestreamOps:{
+    customer:{
+      //🔹 Customer Operations: Watching & Interacting with Streams
+      browseChannels:"/customer/browse",
+      watchChannel:"/customer/browse",
+      getChannelDetails:"/customer/browse",
+      searchChannels:"/customer/browse",
+      //🔹 Customer Operations: Engagement & Feedback
+      postComment:"/customer/browse",
+      deleteComment:"/customer/browse",
+      reactToChannel:"/customer/browse",
+      removeReaction:"/customer/browse",
+      reportComment:"/customer/browse",
+      reportChannel:"/customer/browse",
+    },
+    artist:{
+      // 🔹 Artist Operations: Artist Profile & Content
+      getArtistProfile:"/customer/browse",
+      updateArtistProfile:"/customer/browse",
+      viewChannelEngagement:"/customer/browse",
+      respondToComments:"/customer/browse",
+      requestChannelFeature:"/customer/browse",
+    },
+    admin:{
+      // 🔹 Admin Operations: Channel & Content Management
+      createChannel:"/customer/browse",
+      updateChannel:"/customer/browse",
+      deleteChannel:"/customer/browse",
+      endLiveStream:"/customer/browse",
+      featureArtistsInChannel:"/customer/browse",
+      // 🔹 Admin Operations: Moderation & Policy Enforcement
+      viewReportedChannels:"/customer/browse",
+      suspendChannel:"/customer/browse",
+      deleteCommentByAdmin:"/customer/browse",
+      banUserFromChannel:"/customer/browse",
+      reviewReportedComments:"/customer/browse",
+      // 🔹 Admin Operations: Analytics & Insights
+      getChannelPerformance:"/customer/browse",
+      getArtistEngagementStats:"/customer/browse",
+    },
+    system:{
+      // 🔹 Admin Operations: System-Level Operations
+      scheduleChannel:"/customer/browse",
+      autoArchiveChannel:"/customer/browse",
+      pushLiveNotifications:"/customer/browse",
+      trackViewerCount:"/customer/browse",
+      logUserEngagement:"/customer/browse",
+      recommendChannels:"/customer/browse",
+    }
+  },
+  ProductMgmt: {
+    CreateProduct: '/',
+    QueryProducts: '/',
+    QueryProductsByVendor: '/vendor',
+    QueryProductsByDetails: '/details',
+    GetProduct: '/:productId',
+    UpdateProduct: '/:productId',
+    DeleteProduct: '/:productId',
+  },
+  Orders: {
+    Create: '/orders',
+    Update: '/orders/:orderId',
+    Cancel: '/orders/:orderId/cancel',
+    Fulfill: '/orders/:orderId/fulfill',
+    GetByUser: '/orders/user',
+    GetByVendor: '/orders/vendor',
+  },
+  CourierAssignment: {
+    FindAvailable: 's/available',
+    AssignCourier: 's/assign',
+    AcceptOrder: 's/:orderId/accept',
+    RejectOrder: 's/:orderId/reject',
+    FulfillOrder: 's/:orderId/fulfill',
   },
 };
