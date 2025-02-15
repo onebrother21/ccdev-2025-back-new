@@ -7,27 +7,32 @@ import {
   CheckAdminScopes,
 } from '../../middlewares';
 import { getBullBoardRouter } from "./admin-bull-ui.init";
+import { RedisCache } from 'init/redis-cache';
 
-const router = Router();
-const BullBoardRouter = getBullBoardRouter({
-  queueNames:[
-    "random-sleep",
-    "schedule-notifications",
-    "format-notification",
-    "send-notification",
-    "auto-assign-couriers",
-    "bulk-edit-collection",
-    "log-data",
-    "clock-bugs",
-  ],
-  basePath:'/jobs',
-  refreshInterval:10 * 60 * 1000,
-  logout:true,
-});
+const AdminBullUiRouter = (cache:RedisCache) => {
+  const router = Router();
+  const BullBoardRouter = getBullBoardRouter({
+    queueNames:[
+      "random-sleep",
+      "schedule-notifications",
+      "format-notification",
+      "send-notification",
+      "auto-assign-couriers",
+      "bulk-edit-collection",
+      "log-data",
+      "clock-bugs",
+    ],
+    basePath:'/jobs',
+    refreshInterval:10 * 60 * 1000,
+    logout:true,
+  });
+  
+  router.get('/login',ctrl.RenderLogin);
+  router.post('/login',ctrl.Login);
+  router.get('/logout',ctrl.Logout);
+  router.use('/',ctrl.CheckLogin,BullBoardRouter);  
 
-router.get('/login',ctrl.RenderLogin);
-router.post('/login',ctrl.Login);
-router.get('/logout',ctrl.Logout);
-router.use('/',ctrl.CheckLogin,BullBoardRouter);
-
-export default router;
+  return router;
+};
+export { AdminBullUiRouter };
+export default AdminBullUiRouter;

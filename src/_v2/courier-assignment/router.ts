@@ -3,42 +3,47 @@ import { CourierAssignmentController } from './controller';
 import { courierAssignmentValidators } from './validators';
 import { AuthJWT } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
+import { RedisCache } from 'init/redis-cache';
 
-const router = Router();
+const CourierAssignmentRouter = (cache:RedisCache) => {
+  const router = Router();
+  
+  router.get(
+    V2Routes.CourierAssignment.FindAvailable,
+    AuthJWT,
+    ...courierAssignmentValidators.FindAvailableCouriers,
+    CourierAssignmentController.FindAvailableCouriers
+  );
+  
+  router.post(
+    V2Routes.CourierAssignment.AssignCourier,
+    AuthJWT,
+    ...courierAssignmentValidators.AssignCourier,
+    CourierAssignmentController.AssignCourier
+  );
+  
+  router.post(
+    V2Routes.CourierAssignment.AcceptOrder,
+    AuthJWT,
+    ...courierAssignmentValidators.AcceptOrder,
+    CourierAssignmentController.AcceptOrder
+  );
+  
+  router.post(
+    V2Routes.CourierAssignment.RejectOrder,
+    AuthJWT,
+    ...courierAssignmentValidators.RejectOrder,
+    CourierAssignmentController.RejectOrder
+  );
+  
+  router.post(
+    V2Routes.CourierAssignment.FulfillOrder,
+    AuthJWT,
+    ...courierAssignmentValidators.FulfillOrder,
+    CourierAssignmentController.FulfillOrder
+  );
 
-router.get(
-  V2Routes.CourierAssignment.FindAvailable,
-  AuthJWT,
-  ...courierAssignmentValidators.FindAvailableCouriers,
-  CourierAssignmentController.FindAvailableCouriers
-);
-
-router.post(
-  V2Routes.CourierAssignment.AssignCourier,
-  AuthJWT,
-  ...courierAssignmentValidators.AssignCourier,
-  CourierAssignmentController.AssignCourier
-);
-
-router.post(
-  V2Routes.CourierAssignment.AcceptOrder,
-  AuthJWT,
-  ...courierAssignmentValidators.AcceptOrder,
-  CourierAssignmentController.AcceptOrder
-);
-
-router.post(
-  V2Routes.CourierAssignment.RejectOrder,
-  AuthJWT,
-  ...courierAssignmentValidators.RejectOrder,
-  CourierAssignmentController.RejectOrder
-);
-
-router.post(
-  V2Routes.CourierAssignment.FulfillOrder,
-  AuthJWT,
-  ...courierAssignmentValidators.FulfillOrder,
-  CourierAssignmentController.FulfillOrder
-);
-
-export default router;
+  return router;
+};
+export { CourierAssignmentRouter };
+export default CourierAssignmentRouter;

@@ -5,18 +5,16 @@ type LogTypes = |"log"|"warn"|"error"|"info"|"ok"|"trace"|"reset"|"here"|"debug"
 type ColorTypes = |"grey"|"red"|"green"|"yellow"|"blue"|"magenta"|"default"|"white";
 type DefaultLogColors = Partial<Record<LogTypes,`\x1b[${number}m`|string>>;
 const defaultLogColors:DefaultLogColors = {
-  error:"\x1b[91m",
-  ok:"\x1b[92m",
-  warn:"\x1b[93m",
-  info:"\x1b[94m",
-  trace:"\x1b[95m",
-  log:"\x1b[96m",
-  here:"\x1b[34m",
-  debug:"\x1b[38:5:214m",
-  //debug:"\x1b[38:5:124m",
-  reset:"\x1b[39m",
+  error:"\x1b[91m",//red
+  ok:"\x1b[92m",//green
+  warn:"\x1b[93m",//yellow
+  info:"\x1b[94m",//blue
+  trace:"\x1b[95m",//magenta
+  log:"\x1b[96m",//cyan
+  here:"\x1b[34m",//darkblue
+  debug:"\x1b[38:5:214m",//orange
+  reset:"\x1b[39m",//default
 };
-//console.log("\x1b[40m");
 class ConsoleLogger {
   private static numOfLinesToDisgardInHere = 3;
   private static colors = defaultLogColors;
@@ -62,10 +60,10 @@ class ConsoleLogger {
     }
     return true;
   };
-  static print = (title:string,...args:any[]):boolean => {
+  static print = (k:string,title:string,...args:any[]):boolean => {
     const isProd = Utils.isProd();
     const flag = `⚡️ [${title}]:`;
-    const color = this.colors.debug;
+    const color = this.colors[k];
     const reset = this.colors.reset;
     const log = console.log.bind(console,color,flag,reset);
     if(!isProd) log(...args);

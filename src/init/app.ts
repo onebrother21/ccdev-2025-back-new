@@ -18,8 +18,8 @@ import {
   doubleCsrfUtils,
   DecryptData,
 } from "../middlewares";
-import v2Router, {AppPublicRouter,AdminBullUiRouter } from '../_v2';
-import RedisCache from './redis-cache';
+import getV2Router, {AppPublicRouter,AdminBullUiRouter } from '../_v2';
+import { RedisCache } from './redis-cache';
 import Utils from "../utils";
 const cookieSecret = process.env.COOKIE_SECRET || 'myCookieSecret';
 
@@ -42,11 +42,11 @@ export default (app: Express,cache:RedisCache) => {
   app.use(cors(Utils.corsOptionsDelegate));
   app.use(express.json());
   app.use(express.urlencoded({extended:true}));
-  app.use('/',AppPublicRouter);
-  app.use("/jobs",AdminBullUiRouter);
+  app.use('/',AppPublicRouter(cache));
+  app.use("/jobs",AdminBullUiRouter(cache));
   app.use(DecryptData);
-  //localize(app);
-  app.use("/av2",v2Router);
+  localize(app);
+  app.use("/av2",getV2Router(cache));
   app.use("**",PageNotFound);
   app.use(ErrorHandler);
 };

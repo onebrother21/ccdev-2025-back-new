@@ -7,7 +7,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 import db from './init/db';
-import RedisCache from './init/redis-cache';
+import getRedisCache from './init/redis-cache';
 import initialize from './init/app';
 import {initializeSockets} from "./init/sockets";
 
@@ -25,7 +25,7 @@ class myServer {
   init = async (startDb:boolean,startServer:boolean) => {
     if(startDb && dbString && startServer){
       await db.connect(dbString);
-      const cache = await RedisCache.connect({clear:true});
+      const cache = await getRedisCache();
       initialize(this.app,cache);
       //const {server} =  initializeSockets(this.app);
       //this.server = server;
@@ -34,7 +34,7 @@ class myServer {
   }
   start(){
     (this.server || this.app).listen(port, () => {
-      Utils.logger.print("server",`Server is running at https://${host || hostname}:${port}`);
+      Utils.logger.print("debug","server",`Server is running at https://${host || hostname}:${port}`);
       const routes = expressListRoutes(this.app,{
         prefix: '', // A prefix for router Path
         spacer: 7,   // Spacer between router Method and Path

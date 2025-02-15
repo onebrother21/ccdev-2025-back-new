@@ -1,5 +1,7 @@
 import { AdminOpsService } from './admin-ops.service';
+import Models from '../../models';
 import Types from "../../types";
+import Utils from '../../utils';
 
 export class AdminOpsController {
   static PostJob:IHandler = async (req,res,next) => {
@@ -24,6 +26,46 @@ export class AdminOpsController {
       next();
     } catch(e){ next(e); }
   }
+  static UpdateVars:IHandler = async (req,res,next) => {
+    const {_id:bvarsId,...$set} = req.body.data;
+    const options = {new:true,runValidators:true};
+    if (!bvarsId) res.status(400).json({success: false,message: "No bvars identifier provided!"});
+    try {
+      const bvars = await Models.BusinessVars.findByIdAndUpdate(bvarsId,{$set},options);
+      if (!bvars) res.status(404).json({
+        success: false,
+        message:"No vaars found"
+      });
+      else {
+        res.locals = {
+          success:true,
+          message: req.t(Utils.transStrings.profileupdatedsuccessfuly),
+          data:{ok:true}
+        };
+        next();
+      }
+    }
+    catch(e){
+      res.status(422).send({
+        success:false,
+        message:"Operation failed",
+        error:e,
+      });
+    }
+  };
+  static GenerateKeys:IHandler = async (req,res,next) => {
+    const keys:any = [];
+    keys.push(Utils.longId())
+    keys.push(Utils.longId())
+    keys.push(Utils.shortId())
+    keys.push(Utils.shortId())
+    res.locals = {
+      success:true,
+      message: req.t(Utils.transStrings.profileupdatedsuccessfuly),
+      data:{keys}
+    };
+    next();
+  };
   //🔹 Business Management
   /** Registers a new business entity in the system. */
   static registerBusiness:IHandler = async (req,res,next) => {};

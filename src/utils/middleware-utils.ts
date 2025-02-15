@@ -2,8 +2,9 @@ import { CorsOptions } from "cors";
 import { SessionOptions } from 'express-session';
 import MongoStore from 'connect-mongo';
 import { AppError } from "./common-models";
+import Utils from "utils";
 
-const whitelist = JSON.parse(process.env.WHITELIST||"[]");
+const whitelist = JSON.parse(process.env.ORIGINS||"[]");
 const corsOptions:any = {
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -16,14 +17,17 @@ const corsValidator = (origin:string|undefined, next:Function) => {
     status:403
   }),false);
 };
+/** Assumes that no-origin requests are web requests for server pages only */
 const corsOptionsDelegate = function (req:IRequest, callback:Function) {
   const isApiRoute = /api/.test(req.url);
+  const ip = req.ip;
   const wl = req.bvars && req.bvars["origins"]?req.bvars["origins"]:whitelist;
+  const bl = req.bvars && req.bvars["blacklist"]?req.bvars["blacklist"]:[];
   const origin = req.header("Origin");
-  //logger.info({origin});
+  Utils.logger.info({origin,ip});
   switch(true){
     case !origin:
-    case wl.includes(origin):{
+    case wl.includes(origin) && !bl.includes(ip):{
       corsOptions.origin = true;
       return callback(null,corsOptions);
     }

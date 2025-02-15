@@ -22,7 +22,7 @@ export default function (app:Express) {
   .use(i18nextMiddleware.LanguageDetector)
   .init(i18nextconfig,(err, t) => {
     if (err) return console.log('something went wrong loading', err);
-    Utils.logger.print("i18next","Localization set",t('api.ready')); 
+    Utils.logger.print("debug","i18next","Localization set",t('api.ready')); 
   });
   app.use(i18nextMiddleware.handle(i18next,{}));
 }

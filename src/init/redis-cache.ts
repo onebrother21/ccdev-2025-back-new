@@ -3,11 +3,10 @@ import Models from "../models";
 import Types from "../types";
 import Utils from '../utils';
 
-class RedisCache {
+export class RedisCache {
   redis: Redis;
   private getCache = async (k: string) => await this.redis.get(k);
   private saveCache = async (k: string, v:string) => await this.redis.set(k,v);
-
 
   public getAppData = async () => JSON.parse(await this.redis.get("app_data") || "null");
   public getAppDataValue = async (k: string) => (await this.getAppData())[k];
@@ -17,6 +16,10 @@ class RedisCache {
     await this.redis.set("app_data",newData);
   };
   public clearAppData = async () => await this.redis.set("app_data","null");
+  public refreshAppData = async () => {
+    const bvars = await Models.BusinessVars.findOne({});
+    if(bvars) await this.setAppDataValue(bvars.json());
+  }
 
   /*
   public getAppData = async () => JSON.parse(await this.redis.get("app_data") || "null");
@@ -29,15 +32,12 @@ class RedisCache {
   public clearAppData = async () => await this.redis.set("app_data","null");
   */
   
-  static connect = async (o?:{clear?:boolean}) => {
+  public connect = async (o?:{clear?:boolean}) => {
     try {
-      const cache = new this();
-      cache.redis = new Redis(Utils.getRedisConnectionOpts());
-      if(o && o.clear) await cache.clearAppData();
-      const vars = await cache.getAppData() || (await Models.BusinessVars.findOne({})).json();
-      if(vars) await cache.setAppDataValue(vars);
-      Utils.logger.print("redis","Redis cache is running");
-      return cache;
+      this.redis = new Redis(Utils.getRedisConnectionOpts());
+      // if(o && o.clear) await this.clearAppData();
+      this.refreshAppData();
+      Utils.logger.print("debug","redis","Redis cache is running");
     }
     catch (e) {
       Utils.logger.error(`Redis connection error. ${e}`);
@@ -47,11 +47,16 @@ class RedisCache {
   public test = async () => {
     try {
       const cache = await this.getAppData();
-      Utils.logger.print("redisCache","AppVars ->",cache.id);
+      Utils.logger.print("debug","redisCache","AppVars ->",cache.id);
     }
     catch (e) {
       console.error(e);
     }
   };
 }
-export default RedisCache;
+export const getRedisCache = async () => {
+  const cache = new RedisCache();
+  await cache.connect();
+  return cache;
+}
+export default getRedisCache;

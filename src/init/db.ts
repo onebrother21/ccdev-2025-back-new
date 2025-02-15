@@ -11,7 +11,7 @@ class Db {
     try {
       (<any>mongoose).Promise = bluebird;
       await mongoose.connect(uri,opts);
-      Utils.logger.print("db","DB (mongodb) is running");
+      Utils.logger.print("debug","db","DB (mongodb) is running");
     }
     catch(e){
       Utils.logger.error(`MongoDB connection error. ${e}`);
