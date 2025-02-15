@@ -3,9 +3,9 @@ import { CourierAssignmentController } from './controller';
 import { courierAssignmentValidators } from './validators';
 import { AuthJWT } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const CourierAssignmentRouter = (cache:RedisCache) => {
+const CourierAssignmentRouter = (cache:Utils.RedisCache) => {
   const router = Router();
   
   router.get(

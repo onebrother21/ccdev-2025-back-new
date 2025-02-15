@@ -3,9 +3,9 @@ import { CourierOpsController as ctrl } from './courier-ops.controller';
 import { CourierOpsValidators as validators } from './courier-ops.validators';
 import { AuthJWT,PostMiddleware } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const CourierOpsRouter = (cache:RedisCache) => {
+const CourierOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.CourierOps;
   const router = Router();
   

@@ -7,11 +7,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 import db from './init/db';
-import getRedisCache from './init/redis-cache';
 import initialize from './init/app';
 import {initializeSockets} from "./init/sockets";
-
-import Models from './models';
 import Utils from './utils';
 
 const dbString = process.env.DATABASE_URL || "";
@@ -25,7 +22,7 @@ class myServer {
   init = async (startDb:boolean,startServer:boolean) => {
     if(startDb && dbString && startServer){
       await db.connect(dbString);
-      const cache = await getRedisCache();
+      const cache = await Utils.getRedisCache();
       initialize(this.app,cache);
       //const {server} =  initializeSockets(this.app);
       //this.server = server;

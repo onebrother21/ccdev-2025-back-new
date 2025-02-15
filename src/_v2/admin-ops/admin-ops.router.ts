@@ -3,15 +3,15 @@ import { AdminOpsController as ctrl } from './admin-ops.controller';
 import { AdminOpsValidators as validators } from './admin-ops.validators';
 import { AuthJWT,PostMiddleware } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const AdminOpsRouter = (cache:RedisCache) => {
+const AdminOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.AdminOps
   const router = Router();
   
   router.use(AuthJWT);
-  router.post(routes.jobs.create,[...validators.PostJob,ctrl.PostJob,...PostMiddleware]);
-  router.post(routes.jobs.logVars,[...validators.PostJob,ctrl.PostLogVarsJob,...PostMiddleware]);
+  router.post(routes.jobs.create,[...validators.PostJob,ctrl.postJob,...PostMiddleware]);
+  router.post(routes.jobs.logVars,[...validators.PostJob,ctrl.postLogVarsJob,...PostMiddleware]);
   //🔹 Business Management
   router.post(routes.business.registerBusiness,[ctrl.registerBusiness,...PostMiddleware]);
   router.post(routes.business.verifyBusiness,[ctrl.verifyBusiness,...PostMiddleware]);
@@ -25,7 +25,6 @@ const AdminOpsRouter = (cache:RedisCache) => {
   router.post(routes.admin.manageBusinessUsers,[ctrl.manageBusinessUsers,...PostMiddleware]);
   router.post(routes.admin.setUserPermissions,[ctrl.setUserPermissions,...PostMiddleware]);
   // 🔹 Financial Control
-  
   router.post(routes.financials.processPayouts,[ctrl.processPayout,...PostMiddleware]);
   router.post(routes.financials.getPayoutHistory,[ctrl.getPayoutHistory,...PostMiddleware]);
   router.post(routes.financials.updateBankDetails,[ctrl.updateBankDetails,...PostMiddleware]);
@@ -47,6 +46,8 @@ const AdminOpsRouter = (cache:RedisCache) => {
   router.post(routes.analytics.monitorVendorPerformance,[ctrl.monitorVendorPerformance,...PostMiddleware]);
   router.post(routes.analytics.generateOperationalReports,[ctrl.generateOperationalReports,...PostMiddleware]);
   // 🔹 System Settings & Policies
+  router.post(routes.system.updateBusinessVars,[...validators.PostJob,ctrl.updateBusinessVars,...PostMiddleware]);
+  router.post(routes.system.generateKeys,[...validators.PostJob,ctrl.generateKeys,...PostMiddleware]);
   router.post(routes.settings.updatePlatformPolicies,[ctrl.updatePlatformPolicies,...PostMiddleware]);
   router.post(routes.settings.configureBusinessSettings,[ctrl.configureBusinessSettings,...PostMiddleware]);
   router.post(routes.settings.managePromotions,[ctrl.managePromotions,...PostMiddleware]);

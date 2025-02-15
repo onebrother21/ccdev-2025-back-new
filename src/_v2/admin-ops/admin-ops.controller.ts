@@ -4,7 +4,7 @@ import Types from "../../types";
 import Utils from '../../utils';
 
 export class AdminOpsController {
-  static PostJob:IHandler = async (req,res,next) => {
+  static postJob:IHandler = async (req,res,next) => {
     try {
       const user = req.user as Types.IUser;
       const {success,message} = await AdminOpsService.postJob(user,req.body.data);
@@ -15,7 +15,7 @@ export class AdminOpsController {
       next();
     } catch(e){ next(e); }
   }
-  static PostLogVarsJob:IHandler = async (req,res,next) => {
+  static postLogVarsJob:IHandler = async (req,res,next) => {
     try {
       const user = req.user as Types.IUser;
       const {success,message} = await AdminOpsService.postJob(user,{type:"logData",data:req.bvars});
@@ -26,7 +26,7 @@ export class AdminOpsController {
       next();
     } catch(e){ next(e); }
   }
-  static UpdateVars:IHandler = async (req,res,next) => {
+  static updateBusinessVars:IHandler = async (req,res,next) => {
     const {_id:bvarsId,...$set} = req.body.data;
     const options = {new:true,runValidators:true};
     if (!bvarsId) res.status(400).json({success: false,message: "No bvars identifier provided!"});
@@ -53,7 +53,7 @@ export class AdminOpsController {
       });
     }
   };
-  static GenerateKeys:IHandler = async (req,res,next) => {
+  static generateKeys:IHandler = async (req,res,next) => {
     const keys:any = [];
     keys.push(Utils.longId())
     keys.push(Utils.longId())

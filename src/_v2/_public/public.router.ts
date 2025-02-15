@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { SendJson } from '../../middlewares';
 import Utils from '../../utils';
-import { RedisCache } from 'init/redis-cache';
 
-const AppPublicRouter = (cache:RedisCache) => {
+const AppPublicRouter = (cache:Utils.RedisCache) => {
   const router = Router();
 
   router.get("/hm",(req,res) => {res.json({success:true,message:"ready"});});

@@ -7,9 +7,9 @@ import {
   CheckAdminScopes,
 } from '../../middlewares';
 import { getBullBoardRouter } from "./admin-bull-ui.init";
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const AdminBullUiRouter = (cache:RedisCache) => {
+const AdminBullUiRouter = (cache:Utils.RedisCache) => {
   const router = Router();
   const BullBoardRouter = getBullBoardRouter({
     queueNames:[

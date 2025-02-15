@@ -3,9 +3,9 @@ import { AuthJWT } from '../../middlewares';
 import productMgmtValidators from './product-mgmt.validators';
 import ProductMgmtController from './product-mgmt.controller';
 import { V2Routes } from '../v2-routerstrings';
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const ProductMgmtRouter = (cache:RedisCache) => {
+const ProductMgmtRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.ProductMgmt;
   const router = Router();
   router.post(routes.CreateProduct,[

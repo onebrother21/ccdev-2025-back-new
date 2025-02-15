@@ -3,9 +3,9 @@ import { AuthController as ctrl } from './auth.controller';
 import { AuthValidators as validators } from './auth.validators';
 import { AuthJWT,PostMiddleware } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const AuthRouter = (cache:RedisCache) => {
+const AuthRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.Auth
   const router = Router();
   

@@ -1,6 +1,7 @@
-import { RedisCache } from '../init/redis-cache';
+import Utils from "../utils";
 
-export const SetBusinessVars:(cache:RedisCache) => IHandler = cache => async (req, res, next) => {
+
+export const SetBusinessVars:(cache:Utils.RedisCache) => IHandler = cache => async (req, res, next) => {
   const bvars = await cache.getAppData();
   const {service,delivery,admin} = bvars.rates;
   bvars.courierPercRevenue = delivery - bvars.deliveryAdminRate;

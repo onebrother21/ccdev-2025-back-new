@@ -19,11 +19,10 @@ import {
   DecryptData,
 } from "../middlewares";
 import getV2Router, {AppPublicRouter,AdminBullUiRouter } from '../_v2';
-import { RedisCache } from './redis-cache';
 import Utils from "../utils";
 const cookieSecret = process.env.COOKIE_SECRET || 'myCookieSecret';
 
-export default (app: Express,cache:RedisCache) => {
+export default (app: Express,cache:Utils.RedisCache) => {
   app.use(compression());
   app.use(morgan("dev"));
   app.set('views',path.join(__dirname,'../../views'));

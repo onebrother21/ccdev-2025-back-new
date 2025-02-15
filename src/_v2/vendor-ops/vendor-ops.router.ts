@@ -3,9 +3,9 @@ import { VendorOpsController as ctrl } from './vendor-ops.controller';
 import { VendorOpsValidators as validators } from './vendor-ops.validators';
 import { AuthJWT,PostMiddleware } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const VendorOpsRouter = (cache:RedisCache) => {
+const VendorOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.VendorOps;
   const router = Router();
 

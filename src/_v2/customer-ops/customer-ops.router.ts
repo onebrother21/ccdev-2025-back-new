@@ -3,9 +3,9 @@ import { CustomerOpsController as ctrl } from "./customer-ops.controller";
 import { CustomerOpsValidators as validators } from "./customer-ops.validators";
 import { AuthJWT,PostMiddleware } from "../../middlewares";
 import { V2Routes } from "../v2-routerstrings";
-import { RedisCache } from "init/redis-cache";
+import Utils from "../../utils";
 
-const CustomerOpsRouter = (cache:RedisCache) => {
+const CustomerOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.CustomerOps;
   const router = Router();
   router.use(AuthJWT);

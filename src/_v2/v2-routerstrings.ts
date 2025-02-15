@@ -179,6 +179,10 @@ export const V2Routes = {
       generateOperationalReports:"/analytics/ops",
     },
     // 🔹 System Settings & Policies
+    system:{
+      generateKeys:"/system/keys",
+      updateBusinessVars:"/system/vars",
+    },
     settings:{
       updatePlatformPolicies:"/settings/policies",
       configureBusinessSettings:"/settings/bvars",

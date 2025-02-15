@@ -3,9 +3,9 @@ import { LivestreamOpsController as ctrl } from './livestream-ops.controller';
 import { LivestreamOpsValidators as validators } from './livestream-ops.validators';
 import { AuthJWT,PostMiddleware } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
-import { RedisCache } from 'init/redis-cache';
+import Utils from '../../utils';
 
-const LivestreamOpsRouter = (cache:RedisCache) => {
+const LivestreamOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.LivestreamOps
   const router = Router();
   
