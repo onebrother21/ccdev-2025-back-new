@@ -1,7 +1,6 @@
 import Redis from "ioredis";
-import Models from "../models";
-import Types from "../types";
-import Utils from '../utils';
+import { logger } from "./console-logger";
+import { getRedisConnectionOpts } from "./create-redis-conn-opts";
 
 export class RedisCache {
   redis: Redis;
@@ -9,17 +8,12 @@ export class RedisCache {
   private saveCache = async (k: string, v:string) => await this.redis.set(k,v);
 
   public getAppData = async () => JSON.parse(await this.redis.get("app_data") || "null");
-  public getAppDataValue = async (k: string) => (await this.getAppData())[k];
-  public setAppDataValue = async (v: Record<string, any>) => {
+  public setAppData = async (updates: Record<string,any>) => {
     const data = await this.getAppData();
-    const newData = JSON.stringify({...data,...v});
+    const newData = JSON.stringify({...data,...updates});
     await this.redis.set("app_data",newData);
   };
   public clearAppData = async () => await this.redis.set("app_data","null");
-  public refreshAppData = async () => {
-    const bvars = await Models.BusinessVars.findOne({});
-    if(bvars) await this.setAppDataValue(bvars.json());
-  }
 
   /*
   public getAppData = async () => JSON.parse(await this.redis.get("app_data") || "null");
@@ -34,20 +28,20 @@ export class RedisCache {
   
   public connect = async (o?:{clear?:boolean}) => {
     try {
-      this.redis = new Redis(Utils.getRedisConnectionOpts());
+      this.redis = new Redis(getRedisConnectionOpts());
       // if(o && o.clear) await this.clearAppData();
-      this.refreshAppData();
-      Utils.logger.print("debug","redis","Redis cache is running");
+      //this.refreshAppData();
+      logger.print("debug","redis","Redis cache is running");
     }
     catch (e) {
-      Utils.logger.error(`Redis connection error. ${e}`);
+      logger.error(`Redis connection error. ${e}`);
       process.exit(1);
     }
   };
   public test = async () => {
     try {
       const cache = await this.getAppData();
-      Utils.logger.print("debug","redisCache","AppVars ->",cache.id);
+      logger.print("debug","redisCache","AppVars ->",cache.id);
     }
     catch (e) {
       console.error(e);

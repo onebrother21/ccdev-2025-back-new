@@ -1,13 +1,12 @@
 import * as Profiles from "./profiles";
 
 export type IPin = `${Digit}${Digit}${Digit}${Digit}`;
-export type IAuthTokenInit = {
+export type IAuthToken = IRequest["token"] & {
   type:"access"|"refresh"|"reset"|"stream";
-  id:string;
+  userId:string;
+  username:string;
   role:Profiles.IProfileTypes;
-  sub:string;
 };
-export type IAuthToken = IAuthTokenInit & {exp:any;iat:any;};
 export type IAuthEvents = "created"|"registered"|"verified"|"loggedout"|"loggedin"|"reset"|"updated";
 export type IAuthActivity = Partial<Record<IAuthEvents,string|Date>>;
 export type IAuthParams = {

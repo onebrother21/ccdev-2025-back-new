@@ -36,8 +36,7 @@ const userSchema = new Schema<Types.IUser,User,Types.IUser>({
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
 
-userSchema.plugin(uniqueValidator);
-//userSchema.method('fullName', function fullName() {return this.firstName + ' ' + this.lastName;});
+userSchema.plugin(uniqueValidator,{message:'{PATH} is already taken.'});
 userSchema.methods.toAge = function toAge(){
   const dob = Utils.dateParserX(this.dob);
   if(dob){
@@ -101,6 +100,7 @@ userSchema.methods.preview = function (role){
 userSchema.virtual('status').get(function () {
   return this.statusUpdates[this.statusUpdates.length - 1].name;
 });
+userSchema.virtual('fullname').get(function fullName() {return this.name.first + ' ' + this.name.last;});
 userSchema.methods.json = function (role,auth) {
   const json:Types.IUserJson =  {...this.preview(role) as any};
   const profile = this.profiles[role] || null;
@@ -115,7 +115,6 @@ userSchema.methods.json = function (role,auth) {
     json.isMgr = this.id == (profile as Types.IVendor).mgr;
     json.info = this.info;
   };
-  Utils.logger.log({json});
   return json as Types.IUserJson;
 };
 

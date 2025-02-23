@@ -17,12 +17,13 @@ export class ProfilesService {
   /**
    * Sign up a new user
    */
-  static createProfile = async (role:Types.IProfileTypes,user:Types.IUser) =>  {
+  static createProfile = async (role:Types.IProfileTypes,user:Types.IUser,loc:number[]) =>  {
     const model = profileModels[role];
     const profile = new model({
       user:user._id,
       name:user.name.first + " " + user.name.last,
       displayName:user.username,
+      location:{type:"Point",coordinates:loc},
     }) as Types.IAdmin|Types.ICourier|Types.ICustomer|Types.IVendor;
     await profile.save();
     return {profile};

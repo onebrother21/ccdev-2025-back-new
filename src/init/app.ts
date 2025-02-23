@@ -7,7 +7,6 @@ import compression from 'compression';
 import path from 'path';
 
 import localize from './localization';
-
 import {
   PageNotFound,
   ErrorHandler,
@@ -35,17 +34,17 @@ export default (app: Express,cache:Utils.RedisCache) => {
   }
   app.use(session(Utils.sessionOpts));
   app.use(doubleCsrfUtils.doubleCsrfProtection);
-  app.use(SetCsrfToken);
-  app.use(SetUserDevice);
-  app.use(SetResponseCorsHeaders);
+  app.use(SetCsrfToken());
+  app.use(SetUserDevice());
+  app.use(SetResponseCorsHeaders());
   app.use(cors(Utils.corsOptionsDelegate));
   app.use(express.json());
   app.use(express.urlencoded({extended:true}));
   app.use('/',AppPublicRouter(cache));
   app.use("/jobs",AdminBullUiRouter(cache));
-  app.use(DecryptData);
+  app.use(DecryptData());
   localize(app);
   app.use("/av2",getV2Router(cache));
-  app.use("**",PageNotFound);
-  app.use(ErrorHandler);
+  app.use("**",PageNotFound());
+  app.use(ErrorHandler());
 };

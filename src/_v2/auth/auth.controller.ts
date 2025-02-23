@@ -5,26 +5,29 @@ import Types from "../../types";
 export class AuthController {
   static SignUp:IHandler = async (req,res,next) => {
     try {
+      const user = await AuthService.signupUser(req.body.data);
+      res.locals.status = 201,
       res.locals.success = true,
       res.locals.message = 'User signup successfully',
-      res.locals.data = await AuthService.signupUser(req.body.data);
+      res.locals.data = user.json(user.role);
       next();
     } catch(e){ next(e); }
   };
   static VerifyEmail:IHandler = async (req,res,next) => {
     try{
+      const user = await AuthService.verifyUser(req.body.data);
       res.locals.success = true,
-      res.locals.data = await AuthService.verifyUser(req.body.data);
+      res.locals.data = user.json(user.role);
       next();
     } catch(e){ next(e); }
   };
   static Register:IHandler = async (req,res,next) => {
     try {
-      const {user,role,accessToken,refreshToken} = await AuthService.registerUser(req.body.data);
+      const {user,accessToken,refreshToken} = await AuthService.registerUser(req.body.data);
       res.locals.status = 201,
       res.locals.success = true,
-      res.locals.message = req.t(Utils.transStrings.registeredsuccessfully, {name: user.name.first}),
-      res.locals.data = user.json(role,true),
+      res.locals.message = req.t(Utils.transStrings.registeredsuccessfully,{name: user.name.first}),
+      res.locals.data = user.json(user.role,true);
       res.locals.token = {accessToken,refreshToken};
       req.user = user;
       next();
@@ -32,9 +35,9 @@ export class AuthController {
   };
   static Login:IHandler = async (req,res,next) => {
     try {
-      const {user,role,accessToken,refreshToken} = await AuthService.loginUser(req.body.data);
+      const {user,accessToken,refreshToken} = await AuthService.loginUser(req.body.data);
       res.locals.success = true;
-      res.locals.data = user.json(role,true);
+      res.locals.data = user.json(user.role,true);
       res.locals.token = {accessToken,refreshToken};
       req.user = user;
       next();
@@ -42,20 +45,26 @@ export class AuthController {
   };
   static LoginRefreshToken:IHandler = async (req,res,next) => {
     try {
-      const {user,role,accessToken,refreshToken} = await AuthService.refreshAuthToken(req.body);
+      const {user,accessToken,refreshToken} = await AuthService.refreshAuthToken(req.body);
       req.user = user;
       res.locals.success = true,
-      res.locals.data = user.json(role,true);
+      res.locals.data = user.json(user.role,true);
       res.locals.token = {accessToken,refreshToken};
       req.user = user;
       next();
     } catch(e){ next(e); }
   };
+  /** Logout of Hashdash appspace
+   * 
+   *  - Create dead token
+   *  - How to handle session cookie?
+   */
   static Logout:IHandler = async (req,res,next) => {
     try {
-      await AuthService.logoutUser(req.user.id,res.locals.tokenStub);
+      await AuthService.logoutUser(req.user.id,req.token as any);
       res.locals.success = true,
       res.locals.message = 'Logout successful';
+      //res.locals.token = {accessToken:null,refreshToken:null};
       next();
     } catch(e){ next(e); }
   };
@@ -76,55 +85,30 @@ export class AuthController {
     } catch(e){ next(e); }
   };
   static Update:IHandler = async (req,res,next) => {
-    const user_ = req.user as Types.IUser;
-    const role = user_.role as Types.IProfileTypes;
     try {
-      const {user} = await AuthService.updateUser(user_,req.body.data);
+      const user = await AuthService.updateUser(req.user as any,req.body.data);
       res.locals.success = true;
       res.locals.message = req.t(Utils.transStrings.profileupdatedsuccessfuly),
-      res.locals.data = user.profiles[role].json();
-      next();
-    } catch(e){ next(e); }
-  };
-  static SwitchProfile:IHandler = async (req,res,next) => {
-    const user_ = req.user as Types.IUser;
-    const { role } = req.body.data;
-    try {
-      const {user,accessToken,refreshToken} = await AuthService.switchUserProfile(role,user_);
-      res.locals.success = true;
-      res.locals.token = {accessToken,refreshToken};
-      res.locals.data = user.profiles[role].json();
-      next();
-    } catch(e){ next(e); }
-  };
-  static AddProfile:IHandler = async (req,res,next) => {
-    const user_ = req.user as Types.IUser;
-    const role = user_.role as Types.IProfileTypes;
-    try {
-      const {user} = await AuthService.addUserProfile(role,user_);
-      res.locals.success = true,
-      res.locals.message = req.t(Utils.transStrings.registeredsuccessfully, {name: user.name.first}),
-      res.locals.data = user.json(role,true);
-      next();
-    } catch(e){ next(e); }
-  };
-  static UpdateProfile:IHandler = async (req,res,next) => {
-    const user_ = req.user as Types.IUser;
-    const role = user_.role as Types.IProfileTypes;
-    try {
-      const {user} = await AuthService.updateUserProfile(role,user_,req.body.data);
-      res.locals.success = true,
-      res.locals.message = req.t(Utils.transStrings.registeredsuccessfully, {name: user.name.first})
-      res.locals.data = user.json(role,true);
+      res.locals.data = user.json(user.role,true);
       next();
     } catch(e){ next(e); }
   };
   static Auto:IHandler = async (req,res,next) => {
-    const user = req.user as Types.IUser;
-    const role = user.role as Types.IProfileTypes;
     try {
       res.locals.success = true,
-      res.locals.data = user.json(role,true);
+      res.locals.data = (req.user as any).json(req.user.role,true);
+      next();
+    } catch(e){ next(e); }
+  };
+  static SwitchProfile:IHandler = async (req,res,next) => {
+    try {
+      const user_ = req.user as Types.IUser;
+      const role = req.query.role as any;
+      const {user,accessToken,refreshToken} = await AuthService.switchUserProfile(role,user_);
+      res.locals.success = true;
+      res.locals.token = {accessToken,refreshToken};
+      res.locals.data = user.json(user.role,true);
+      req.user = user;
       next();
     } catch(e){ next(e); }
   };

@@ -1,6 +1,6 @@
-import Models from '../models';
-import Types from "../types";
-import Utils from '../utils';
+import Models from '../../models';
+import Types from "../../types";
+import Utils from '../../utils';
 
 export class ProductsService {
   static createProduct = async (user:Types.IUser,role:Types.IProfileTypes,newProduct:Partial<Types.IProduct>) =>  {

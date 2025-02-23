@@ -1,32 +1,22 @@
 import { Router } from 'express';
-import { AuthJWT } from '../../middlewares';
-import productMgmtValidators from './product-mgmt.validators';
-import ProductMgmtController from './product-mgmt.controller';
+import { ProductMgmtController as ctrl } from './product-mgmt.controller';
+import { productMgmtValidators as validators } from './product-mgmt.validators';
+import { AuthJWT,PostMiddleware } from '../../middlewares';
 import { V2Routes } from '../v2-routerstrings';
 import Utils from '../../utils';
 
 const ProductMgmtRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.ProductMgmt;
   const router = Router();
-  router.post(routes.CreateProduct,[
-    AuthJWT,...productMgmtValidators.CreateProduct,
-    ProductMgmtController.CreateProduct
-  ]);
-  router.get(routes.QueryProducts,[AuthJWT,ProductMgmtController.QueryProductsByVendor]);
-  router.get(routes.QueryProductsByDetails,[AuthJWT,ProductMgmtController.QueryProductsByDetails]);
-  router.get(routes.QueryProductsByVendor,[
-    AuthJWT,...productMgmtValidators.QueryProductsByVendor,
-    ProductMgmtController.QueryProductsByVendor
-  ]);
-  router.get(routes.GetProduct,[AuthJWT,ProductMgmtController.GetProduct]);
-  router.put(routes.UpdateProduct,[
-    AuthJWT,...productMgmtValidators.UpdateProduct,
-    ProductMgmtController.UpdateProduct
-  ]);
-  router.delete(routes.DeleteProduct,[
-    AuthJWT,...productMgmtValidators.DeleteProduct,
-    ProductMgmtController.DeleteProduct
-  ]);
+  router.use(AuthJWT());
+
+  router.post(routes.CreateProduct,[...validators.CreateProduct,ctrl.CreateProduct,...PostMiddleware]);
+  router.get(routes.QueryProducts,[ctrl.QueryProductsByVendor,...PostMiddleware]);
+  router.get(routes.QueryProductsByDetails,[ctrl.QueryProductsByDetails,...PostMiddleware]);
+  router.get(routes.QueryProductsByVendor,[...validators.QueryProductsByVendor,ctrl.QueryProductsByVendor,...PostMiddleware]);
+  router.get(routes.GetProduct,[ctrl.GetProduct,...PostMiddleware]);
+  router.put(routes.UpdateProduct,[...validators.UpdateProduct,ctrl.UpdateProduct,...PostMiddleware]);
+  router.delete(routes.DeleteProduct,[...validators.DeleteProduct,ctrl.DeleteProduct,...PostMiddleware]);
 
   return router;
 };

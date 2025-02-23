@@ -1,5 +1,6 @@
 export const V2Routes = {
   Auth: {
+    hm:"/auth",
     Signup: '/signup',
     Verify: '/verify',
     Register: '/register',
@@ -9,23 +10,25 @@ export const V2Routes = {
     Refresh: '/refresh',
     Update: '/update',
     SwitchProfile: '/profile',
-    AddCourierProfile: '/courier/add',
-    AddVendorProfile: '/vendor/add',
-    AddAdminProfile: '/admin/add',
-    UpdateCustomerProfile: '/customer/update',
-    UpdateCourierProfile: '/courier/update',
-    UpdateVendorProfile: '/vendor/update',
-    UpdateAdminProfile: '/admin/update',
   },
   VendorOps:{
+    hm:"/vendor",
     profile: {
       register: '/register',
+      tempPswd: '/temppswd',
+      searchByName: '/search',
+      joinAcct: '/join/:vendorId',
+      leaveAcct: '/leave',
+      removeUser: '/remove/:userToRemoveId',
+      transferMgmt: '/transfer/:newMgrId',
+      
       update: '/profile',
       get: '/profile',
       delete: '/profile',
       deleteX: '/delete'
     },
     products: {
+      get: '/inventory',
       create: '/products',
       update: '/products/:productId',
       delete: '/products/:productId',
@@ -62,6 +65,7 @@ export const V2Routes = {
     }
   },
   CourierOps:{
+    hm:"/courier",
     courier: {
       register: '/register',
       updateProfile: '/profile',
@@ -78,7 +82,9 @@ export const V2Routes = {
       updateStatus: '/order/:orderId/status'
     },
     navigation: {
-      getRoute: '/order/:orderId/get-route',
+      FindAvailable: '/available',
+      AssignCourier: '/assign',
+      getRoute: '/order/:orderId/route',
       updateLoc: '/updateLoc',
       trackLoc: '/updateLoc',
     },
@@ -135,6 +141,13 @@ export const V2Routes = {
     SubmitFeedback: "/customer/feedback/submit",
   },
   AdminOps:{
+    // 🔹 System Business Vars
+    system:{
+      generateKeys:"/system/keys",
+      getBusinessVars:"/system/vars",
+      createBusinessVars:"/system/vars",
+      updateBusinessVars:"/system/vars",
+    },
     //🔹 Business Management
     business:{
       registerBusiness:"/business/register",
@@ -179,10 +192,6 @@ export const V2Routes = {
       generateOperationalReports:"/analytics/ops",
     },
     // 🔹 System Settings & Policies
-    system:{
-      generateKeys:"/system/keys",
-      updateBusinessVars:"/system/vars",
-    },
     settings:{
       updatePlatformPolicies:"/settings/policies",
       configureBusinessSettings:"/settings/bvars",
@@ -271,11 +280,5 @@ export const V2Routes = {
     GetByUser: '/orders/user',
     GetByVendor: '/orders/vendor',
   },
-  CourierAssignment: {
-    FindAvailable: 's/available',
-    AssignCourier: 's/assign',
-    AcceptOrder: 's/:orderId/accept',
-    RejectOrder: 's/:orderId/reject',
-    FulfillOrder: 's/:orderId/fulfill',
-  },
 };
+export default V2Routes;

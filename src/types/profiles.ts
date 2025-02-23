@@ -100,9 +100,10 @@ export type IVendorType = {
   approvalUpdates:Status<IApprovalStatuses>[]; 
   items:{
     qty:number;
-    item:Products.IProduct,
+    product:Products.IProduct;
     receivedOn:Date; // Date the product was received
   }[];
+  itemCt:number;
   displayName?:string;
   img?:string;
   bio?:string;

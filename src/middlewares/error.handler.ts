@@ -3,9 +3,9 @@ import { doubleCsrfUtils } from "./set-csrf-token.handler";
 
 
 const clockBugsQ = Utils.createQueue("clock-bugs");
-const ErrorHandler:IErrorHandler = async (err,req,res,next) => {
+const ErrorHandler:() => IErrorHandler = () => async (err,req,res,next) => {
   if(res.headersSent) return next(err);
-  else if(err instanceof Utils.AppError) Utils.logger.error(err.json()) && res.status(err.status).json({
+  else if(err instanceof Utils.AppError) res.status(err.status).json({
     success:false,
     message:err.message
   });

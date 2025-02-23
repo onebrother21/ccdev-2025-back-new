@@ -1,6 +1,6 @@
 import { Worker,Processor,QueueOptions } from 'bullmq';
-import { logger } from "./console-logger";
 import { getRedisConnectionOpts } from './create-redis-conn-opts';
+import { logger } from "./console-logger";
 
 const getBullQueueOpts = () => {
   const opts:QueueOptions = {

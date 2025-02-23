@@ -1,5 +1,7 @@
 import { deepmerge } from "deepmerge-ts";
 import CryptoJS from "crypto-js";
+import expressListRoutes from 'express-list-routes';
+import { logger } from "./console-logger";
 
 type sortArg<T> = keyof T | `-${string & keyof T}`;
 const supersecret = process.env.ENCRYPTION_KEY || "";
@@ -372,3 +374,13 @@ export var decrypt_ = (value:any) => {
 }
 export var encrypt = (o:any) => encrypt_(JSON.stringify(o));
 export var decrypt = (o:any) => JSON.parse(decrypt_(o));
+
+export var listRoutes = (app:Express.Application) => {
+  const routes = expressListRoutes(app,{
+    prefix: '', // A prefix for router Path
+    spacer: 7,   // Spacer between router Method and Path
+    logger:false, // A custom logger function or a boolean (true for default logger, false for no logging)
+    color: true // If the console log should color the method name
+  });
+  logger.info("App Routes: ",routes);
+};

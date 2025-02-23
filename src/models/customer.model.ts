@@ -10,6 +10,11 @@ const cartItemSchema = new Schema<any>({
   item:{type:ObjectId,ref:"products",required:true},
   qty:{type:Number,required:true},
 },{_id:false,timestamps:false});
+
+const locationSchema = new Schema<Types.ICustomer["location"]>({
+  type:{type:String,enum:["Point"]},
+  coordinates:{type:[Number]},
+},{_id:false,timestamps:false});
 const customerSchema = new Schema<Types.ICustomer,Customer,Types.ICustomerMethods>({
   statusUpdates:Utils.getStatusArraySchema(Object.values(Types.IProfileStatuses),Types.IProfileStatuses.NEW),
   name:{type:String,required:true,validate:/^[a-zA-Z\s]{2,20}$/,unique: true, lowercase: true},
@@ -17,7 +22,7 @@ const customerSchema = new Schema<Types.ICustomer,Customer,Types.ICustomerMethod
   img:{type:String},
   address:{type:Utils.getAddressSchema()},
   license:{type:Utils.getLicenseSchema()},
-  location:{type:{type:String,default:"Point"},coordinates:[Number]},
+  location:locationSchema,
   user:{type:ObjectId,ref:"users",required:true},
   cart:[cartItemSchema],
   info:{type:Object},
@@ -43,6 +48,7 @@ customerSchema.methods.json = function () {
   json.license = this.license;
   json.info = this.info;
   json.cart = this.cart;
+  json.location = this.location.coordinates as any;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
   return json as Types.ICustomer;

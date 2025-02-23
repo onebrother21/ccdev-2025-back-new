@@ -9,7 +9,7 @@ const LivestreamOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.LivestreamOps
   const router = Router();
   
-  router.use(AuthJWT);
+  router.use(AuthJWT());
   //🔹 Customer Operations: Watching & Interacting with Streams
   router.post(routes.customer.browseChannels,[...validators.browseChannels,ctrl.browseChannels,...PostMiddleware]);
   router.post(routes.customer.watchChannel,[...validators.watchChannel,ctrl.watchChannel,...PostMiddleware]);

@@ -2,8 +2,8 @@
 import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import axios from 'axios';
-import { getUserSocket } from '../init/sockets';
 import Utils from '../utils';
+import { getUserSocket } from '../init/sockets';
 
 //dummy func
 const sendDummy = async (to: string, subject: string, text: string) => {
@@ -11,7 +11,26 @@ const sendDummy = async (to: string, subject: string, text: string) => {
   return Utils.longId();
 };
 // Function for sending email
+const sendTestEmail = async (to: string, subject: string, text: string) => {
+  const transporter = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "5ff7693d5260e6",
+      pass: "b81277f7cfa005"
+    }
+  });
+  const info = await transporter.sendMail({
+    from: 'hashdash-support@mailtrap.io',
+    to,
+    subject,
+    text,
+  });
+  return info.messageId;
+};
 const sendEmail = async (to: string, subject: string, text: string) => {
+  // Looking to send emails in production? Check out our Email API/SMTP product!
+
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {

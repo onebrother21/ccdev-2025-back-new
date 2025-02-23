@@ -2,6 +2,7 @@ import { CorsOptions } from "cors";
 import { SessionOptions } from 'express-session';
 import MongoStore from 'connect-mongo';
 import { AppError } from "./common-models";
+import { logger } from "./console-logger";
 import Utils from "utils";
 
 const whitelist = JSON.parse(process.env.ORIGINS||"[]");
@@ -19,25 +20,22 @@ const corsValidator = (origin:string|undefined, next:Function) => {
 };
 /** Assumes that no-origin requests are web requests for server pages only */
 const corsOptionsDelegate = function (req:IRequest, callback:Function) {
-  const isApiRoute = /api/.test(req.url);
-  const ip = req.ip;
+  const isApiRoute = /av2/.test(req.url);
+  const ip = req.ip.replace(/:/gi,"").replace(/f/gi,"");
   const wl = req.bvars && req.bvars["origins"]?req.bvars["origins"]:whitelist;
   const bl = req.bvars && req.bvars["blacklist"]?req.bvars["blacklist"]:[];
   const origin = req.header("Origin");
-  Utils.logger.info({origin,ip});
-  switch(true){
-    case !origin:
-    case wl.includes(origin) && !bl.includes(ip):{
-      corsOptions.origin = true;
-      return callback(null,corsOptions);
-    }
-    default:{
-      corsOptions.origin = false;
-      return callback(new AppError({
-        message:"Request not allowed",
-        status:403
-      }),corsOptions);
-    }
+  const inTheClear = wl.includes(origin) && !bl.includes(ip);
+  if(!origin || inTheClear){
+    corsOptions.origin = true;
+    return callback(null,corsOptions);
+  }
+  else {
+    corsOptions.origin = false;
+    return callback(new AppError({
+      message:"Request not allowed",
+      status:403
+    }),corsOptions);
   }
 }
 const morganOutputTemplate = ':method :url :status [:remote-addr :user-agent :date[iso]]';

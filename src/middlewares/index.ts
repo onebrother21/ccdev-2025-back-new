@@ -30,7 +30,7 @@ export {
   ErrorHandler,
 };
 export const PostMiddleware = [
-  EncryptData,
-  SetUserSession,
-  SendJson,
+  EncryptData(),
+  SetUserSession(),
+  SendJson(),
 ];

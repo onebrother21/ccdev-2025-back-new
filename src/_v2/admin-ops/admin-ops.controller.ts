@@ -4,6 +4,17 @@ import Types from "../../types";
 import Utils from '../../utils';
 
 export class AdminOpsController {
+  static registerAdmin:IHandler = async (req,res,next) => {
+    try {
+      const user = req.user as Types.IUser;
+      const ok = await AdminOpsService.registerAdmin(user,req.body.data);
+      res.locals.status = 201;
+      res.locals.success = true;
+      res.locals.message = "You have registered a new vendor profile!";
+      res.locals.data = {ok};
+      next();
+    } catch (e) { next(e); }
+  };
   static postJob:IHandler = async (req,res,next) => {
     try {
       const user = req.user as Types.IUser;
@@ -26,22 +37,52 @@ export class AdminOpsController {
       next();
     } catch(e){ next(e); }
   }
-  static updateBusinessVars:IHandler = async (req,res,next) => {
+  static createBusinessVars:IHandler = async (req,res,next) => {
+    try {
+      const bvars = await new Models.BusinessVars(req.body.data);
+      res.locals.success = true,
+      res.locals.message =  "Business vars created",
+      res.locals.data = {varsId:bvars.id};
+      next();
+    }
+    catch(e){
+      res.status(422).send({
+        success:false,
+        message:"Operation failed",
+        error:e,
+      });
+    }
+  };
+  static getBusinessVars:(cache:Utils.RedisCache) => IHandler = cache => async (req,res,next) => {
+    try {
+      res.locals.success = true,
+      res.locals.message =  "Business vars set",
+      res.locals.data = req.bvars;
+      next();
+    }
+    catch(e){
+      res.status(422).send({
+        success:false,
+        message:"Operation failed",
+        error:e,
+      });
+    }
+  };
+  static updateBusinessVars:(cache:Utils.RedisCache) => IHandler = cache => async (req,res,next) => {
     const {_id:bvarsId,...$set} = req.body.data;
     const options = {new:true,runValidators:true};
     if (!bvarsId) res.status(400).json({success: false,message: "No bvars identifier provided!"});
     try {
       const bvars = await Models.BusinessVars.findByIdAndUpdate(bvarsId,{$set},options);
-      if (!bvars) res.status(404).json({
-        success: false,
-        message:"No vaars found"
-      });
+      if (!bvars) throw new Utils.AppError(400,"Operation failed");
       else {
-        res.locals = {
-          success:true,
-          message: req.t(Utils.transStrings.profileupdatedsuccessfuly),
-          data:{ok:true}
-        };
+        if(bvars.status == "active"){
+          await cache.clearAppData();
+          await cache.setAppData(bvars.json());
+        }
+        res.locals.success = true,
+        res.locals.message =  "Business vars set",
+        res.locals.data = {ok:true};
         next();
       }
     }
@@ -59,11 +100,8 @@ export class AdminOpsController {
     keys.push(Utils.longId())
     keys.push(Utils.shortId())
     keys.push(Utils.shortId())
-    res.locals = {
-      success:true,
-      message: req.t(Utils.transStrings.profileupdatedsuccessfuly),
-      data:{keys}
-    };
+    res.locals.success = true,
+    res.locals.data = {keys};
     next();
   };
   //🔹 Business Management

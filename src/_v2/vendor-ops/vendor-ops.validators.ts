@@ -19,7 +19,8 @@ export class VendorOpsValidators {
     body('data.address.country').if(body('data.address').exists()).trim().escape().equals("USA").withMessage('Invalid address info'),
     body('data.location').isArray({min:2,max:2}).withMessage('Invalid location'),
     body('data.location.*').isNumeric().withMessage('Invalid location'),
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
+
   static updateVendorProfile = [[
     body('data.name').optional().notEmpty().withMessage('Vendor name cannot be empty').optional(),
     body('data.email').optional().isEmail().withMessage('Invalid email format').optional(),
@@ -35,10 +36,12 @@ export class VendorOpsValidators {
     body('data.address.country').if(body('data.address').exists()).trim().escape().equals("USA").withMessage('Invalid address info').optional(),
     body('data.location').isArray({min:2,max:2}).withMessage('Invalid location').optional(),
     body('data.location.*').isNumeric().withMessage('Invalid location').optional(),
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
+
   static deleteVendorAccount = [[
     body('confirmDelete').equals('YES').withMessage('You must confirm account deletion')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
+
   // 📌 Product Management Validators
   static createProduct = [[
     body('data.name').trim().escape().matches(/^[\w\s]{3,20}$/).withMessage('Invalid name'),
@@ -56,7 +59,8 @@ export class VendorOpsValidators {
     body('data.expiration').isISO8601().withMessage('Invalid date'),
     body('data.receivedOn').isISO8601().withMessage('Invalid date'),
     body('data.qty').isInt({gt:0}).withMessage('Invalid date'),
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
+
   static updateProduct = [[
     body('data.name').trim().escape().matches(/^[\w\s]{3,20}$/).withMessage('Invalid name').optional(),
     body('data.sku').trim().escape().matches(/^[a-zA-Z0-9]{6,20}$/).withMessage('Invalid type').optional(),
@@ -72,65 +76,65 @@ export class VendorOpsValidators {
     body('data.price.per').if(body('data.price').exists()).trim().escape().notEmpty().withMessage('Invalid parameters').optional(),
     body('data.receivedOn').isISO8601().withMessage('Invalid date').optional(),
     body('data.expiration').isISO8601().withMessage('Invalid date').optional(),
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static deleteProduct = [[
     param('productId').isMongoId().withMessage('Invalid product ID')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   // 📌 Order & Fulfillment Validators
   static acceptOrder = [[
     param('orderId').isMongoId().withMessage('Invalid order ID')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static rejectOrder = [[
     param('orderId').isMongoId().withMessage('Invalid order ID'),
     body('reason').notEmpty().withMessage('Rejection reason is required')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static markOrderReady = [[
     param('orderId').isMongoId().withMessage('Invalid order ID')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static updateOrderStatus = [[
     param('orderId').isMongoId().withMessage('Invalid order ID'),
     body('status').isIn(['preparing', 'ready', 'completed']).withMessage('Invalid status value')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   // 📌 Courier Assignment & Delivery Validators
   static assignCourierManually = [[
     param('orderId').isMongoId().withMessage('Invalid order ID'),
     body('courierId').isMongoId().withMessage('Invalid courier ID')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static cancelCourierAssignment = [[
     param('orderId').isMongoId().withMessage('Invalid order ID')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   // 📌 Notifications & Communication Validators
   static sendOrderUpdateNotification = [[
     body('orderId').isMongoId().withMessage('Invalid order ID'),
     body('message').notEmpty().withMessage('Notification message is required')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static sendBroadcastNotification = [[
     body('title').notEmpty().withMessage('Title is required'),
     body('message').notEmpty().withMessage('Message is required')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   // 📌 Analytics & Reporting Validators (No input required, so no validators needed)
 
   // 📌 Settings & Preferences Validators
   static updateBusinessHours = [[
     body('hours').isObject().withMessage('Business hours must be an object')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static setAutoAcceptOrders = [[
     body('autoAccept').isBoolean().withMessage('Auto-accept must be true or false')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 
   static setCourierPreferences = [[
     body('preferredCouriers').optional().isArray().withMessage('Preferred couriers must be an array')
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 };
 export default VendorOpsValidators;

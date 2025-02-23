@@ -1,4 +1,4 @@
-export const SendJson:IHandler = (req,res,next) => {
+export const SendJson:() => IHandler = () => (req,res,next) => {
   const {
     status,
     success,

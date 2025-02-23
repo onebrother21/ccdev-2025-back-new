@@ -18,13 +18,6 @@ const devStaticVerify = process.env.DEV_STATIC_VERIFY;
 const port = process.env.PORT;
 const hostname = process.env.HOSTNAME;
 
-const profileModels:Record<Types.IProfileTypes,Model<any>> = {
-  customer:Models.Customer,
-  courier:Models.Courier,
-  vendor:Models.Vendor,
-  admin:Models.Admin
-};
-
 export class AuthService {
   /**
    * To check for existing user using front-end typeahead
@@ -43,11 +36,12 @@ export class AuthService {
       verification:bcrypt.hashSync(verification,saltRounds),
       verificationSent:new Date(),
     });
+    user.role = role;
     // Send welcome notification
     const notificationMethod = Types.INotificationSendMethods.EMAIL;
     const notificationData = {code:verification};
     await Services.Notification.createNotification("VERIFY",notificationMethod,[user.id],notificationData);
-    return {user,role};
+    return user;
   };
   /**
    * Verify user email
@@ -64,14 +58,15 @@ export class AuthService {
         user.verification = null;
         user.verificationSent = null;
         await user.setStatus(Types.IUserStatuses.ENABLED,null,true);
-        return {user,role};
+        user.role = role;
+        return user;
       }
     }
   }
   /**
    * Registers a new user
    */
-  static registerUser = async ({id,...data}:Partial<Types.IUser>) => {
+  static registerUser = async ({id,loc,email,...data}:Partial<Types.IUser> & {loc:number[]}) => {
     const user = await Models.User.findById(id);
     const role = Types.IProfileTypes.CUSTOMER;
     if(!user) throw new Utils.AppError(401,"Registration failed!");
@@ -81,15 +76,22 @@ export class AuthService {
       username:data.username,
       pin:bcrypt.hashSync(data.pin,saltRounds),
     });
-    const { profile } = await Services.Profiles.createProfile(role,user);
+    const profile = new Models.Customer({
+      user:user._id,
+      name:user.name.first + " " + user.name.last,
+      displayName:user.username,
+      location:{type:"Point",coordinates:loc},
+    });
+    await profile.save();
     user.profiles[role] = profile.id;
     await user.setStatus(Types.IUserStatuses.ACTIVE,null,true);
     await user.populate(`profiles.${role}`);
+    user.role = role;
     //send registration notification
     const notificationMethod = Types.INotificationSendMethods.EMAIL;
     const notificationData = {name:Utils.cap(data.name.first as string)};
     await Services.Notification.createNotification("REGISTER",notificationMethod,[user.id],notificationData);
-    return {user,role,...await this.generateAuthTokens(user,role)};
+    return {user,...await this.generateAuthTokens(user,role)};
   };
 
   /**
@@ -102,12 +104,15 @@ export class AuthService {
     if(!user || !await bcrypt.compare(pin,user.pin)) throw new Utils.AppError(401,'Ops! wrong Username or Password!');
     await user.setStatus(Types.IUserStatuses.ACTIVE,null,true);
     await user.populate(`profiles.${role}`);
+    user.role = role;
     
-    // Send welcome notification
-    const notificationMethod = Types.INotificationSendMethods.SMS;
-    const notificationData = {name:Utils.cap(user.name.first as string)};
-    if(unrecognized) await Services.Notification.createNotification("UNRECOGNIZED_LOGIN",notificationMethod,[user.id],notificationData);
-    return {user,role,...await this.generateAuthTokens(user,role)};
+    // Send unrecognized device notification
+    if(unrecognized) {
+      const notificationMethod = Types.INotificationSendMethods.SMS;
+      const notificationData = {name:Utils.cap(user.name.first as string)};
+      await Services.Notification.createNotification("UNRECOGNIZED_LOGIN",notificationMethod,[user.id],notificationData);
+    }
+    return {user,...await this.generateAuthTokens(user,role)};
   };
   /**
    * Refreshes an access token
@@ -117,65 +122,51 @@ export class AuthService {
     const storedToken = await Models.AuthToken.findOne({ refreshToken });
     if (!storedToken) throw new Utils.AppError(403,'Invalid refresh token');
     try {
-      const {id,role} = jwt.verify(refreshToken,jwtSecret) as {id:string,role:Types.IProfileTypes};
-      const accessToken = this.generateToken("access",id,role);
-      const newRefreshToken = this.generateToken("refresh",id,role);
-      await Models.AuthToken.findOneAndUpdate({ userId:id }, { refreshToken: newRefreshToken });
-      const user = await Models.User.findById(id);
-      return {user,role,accessToken,refreshToken};
+      const {role,...o} = jwt.verify(refreshToken,jwtSecret) as Types.IAuthToken;
+      const user = await Models.User.findById(o.userId);
+      return {user,...await this.generateAuthTokens(o as any,role)};
     }
     catch(e){throw new Utils.AppError(403,'Token refresh failed');}
   }
   /**
    * Logs out a user by blacklisting their access token
    */
-  static logoutUser = async (userId:string,stub:string) => {
+  static logoutUser = async (userId:string,decoded:Types.IAuthToken) => {
     const user = await Models.User.findById(userId);
-    user.setStatus(Types.IUserStatuses.INACTIVE);
-    await Models.DeadToken.create({stub});
+    await user.setStatus(Types.IUserStatuses.INACTIVE,null,true);
+    await Models.DeadToken.findOneAndUpdate({userId},decoded,{upsert:true});
+    await Models.AuthToken.findOneAndDelete({userId});
     return {ok:true};
   };
   
   static switchUserProfile = async (role:Types.IProfileTypes,user:Types.IUser) =>  {
-    let populateMe:any = `profiles.${role}`;
-    let o = {path:'profiles',populate:{path:role,populate:{path:'items.item'}}};
+    let populateMe:any = {};
+    const vendorPops = {path:role,populate:{path:'items.product'}};
+    const courierPops = {path:role,populate:{path:'items.product'}};
+    const customerPops = {path:role,populate:{path:'items.product'}};
+    const adminPops = {path:role,populate:{path:'items.product'}};
     switch(role){
-      case Types.IProfileTypes.VENDOR:populateMe = o;break;
+      case Types.IProfileTypes.VENDOR:populateMe = vendorPops;break;
+      case Types.IProfileTypes.COURIER:populateMe = courierPops;break;
+      case Types.IProfileTypes.CUSTOMER:populateMe = customerPops;break;
+      case Types.IProfileTypes.ADMIN:populateMe = adminPops;break;
       default:break;
     }
-    await user.populate(populateMe);
-    return {user,role,...await this.generateAuthTokens(user,role)};
+    await user.populate({path:`profiles.${role}`,populate:populateMe});
+    user.role = role;
+    return {user,...await this.generateAuthTokens(user,role)};
   };
   static updateUser = async ({id}:Types.IUser,{profiles,name,role:role_,...$set}:Partial<Types.IUser>) => {
     const role = role_ || Types.IProfileTypes.CUSTOMER;
     const options = {new:true,runValidators:true};
     if($set.pin){
-      const newPin = bcrypt.hashSync($set.pin, saltRounds);
+      const newPin = bcrypt.hashSync($set.pin,saltRounds);
       $set.pin = newPin as any;
     }
     const user = await Models.User.findByIdAndUpdate(id,{$set},options);
-    return {user};
-  };
-  static addUserProfile = async (role:Types.IProfileTypes,user:Types.IUser) =>  {
-    const { profile } = await Services.Profiles.createProfile(role,user);
-    user.profiles[role] = profile.id;
-    await user.save();
     await user.populate(`profiles.${role}`);
-    //send profile added notification
-    const notificationMethod = Types.INotificationSendMethods.EMAIL;
-    const notificationData = {name:Utils.cap(user.name.first as string)}
-    await Services.Notification.createNotification("ACCOUNT_UPDATE",notificationMethod,[user.id],notificationData);
-    return {user,role};
-  };
-  static updateUserProfile = async (role:Types.IProfileTypes,user:Types.IUser,updates:any) =>  {
-    const profileId = user.profiles[role].id;
-    const { profile } = await Services.Profiles.updateProfile(role,profileId,updates);
-    await user.populate(`profiles.${role}`);
-    //send profile UPDATED notification
-    const notificationMethod = Types.INotificationSendMethods.EMAIL;
-    const notificationData = {name:Utils.cap(user.name.first as string)}
-    await Services.Notification.createNotification("ACCOUNT_UPDATE",notificationMethod,[user.id],notificationData);
-    return {user,role};
+    user.role = role;
+    return user;
   };
   /**
    * Initiates a password reset request
@@ -205,23 +196,24 @@ export class AuthService {
     }
     catch (e){throw new Utils.AppError(400,'Invalid or expired token');}
   }
-  static generateToken = (type:Types.IAuthToken["type"],id:string,role:Types.IProfileTypes = Types.IProfileTypes.CUSTOMER) => {
+  static generateToken = async (type:Types.IAuthToken["type"],{id:userId,username,email}:Types.IUser,role:Types.IProfileTypes = Types.IProfileTypes.CUSTOMER) => {
     const hash = Utils.hexId(32);
-    const payload:Types.IAuthTokenInit = {type,id,role,sub:`av2/${hash}`};
+    const payload:Partial<Types.IAuthToken> = {type,role,userId,username:username || email,sub:`av2/${hash}`};
     const issuer = `http://${hostname}:${port}`;
-    Utils.logger.info({payload,hash,issuer});
     let secret = "",expiresIn = "";
     switch(type){
       case "access":secret = jwtSecret;expiresIn = TOKEN_EXPIRATION;break;
       case "refresh":secret = refreshSecret;expiresIn = REFRESH_EXPIRATION;break;
       case "reset":secret = resetSecret;expiresIn = RESET_EXPIRATION;break;
     }
-    return jwt.sign(payload,secret,{expiresIn,issuer});
+    const token = jwt.sign(payload,secret,{expiresIn,issuer});
+    const decoded = jwt.verify(token,secret) as Types.IAuthToken;
+    if(type == "refresh") await Models.AuthToken.findOneAndUpdate({userId},decoded,{upsert:true});
+    return token;
   }
-  static generateAuthTokens = async ({id}:Types.IUser,role:Types.IProfileTypes = Types.IProfileTypes.CUSTOMER) => {
-    const accessToken = this.generateToken("access",id,role);
-    const refreshToken = this.generateToken("refresh",id,role);
-    await Models.AuthToken.findOneAndUpdate({userId:id}, { refreshToken }, { upsert: true });
+  static generateAuthTokens = async (o:Types.IUser,role:Types.IProfileTypes = Types.IProfileTypes.CUSTOMER) => {
+    const accessToken = await this.generateToken("access",o,role);
+    const refreshToken = await this.generateToken("refresh",o,role);
     return {accessToken,refreshToken};
   }
 }

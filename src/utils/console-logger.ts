@@ -32,32 +32,36 @@ class ConsoleLogger {
     const realStack = stack.slice(firstAt);
     const stackArr = realStack.split("at ").map(s => s.trim()).slice(1);
     const here = stackArr[this.numOfLinesToDisgardInHere];
-    const functionName = here.split(" (C:")[0];
-    const filepath = here.split(" (C:")[1];
+    const functionName = here.split("C:")[0].trim().replace(/[\s\(\)]+$/,"");
+    const filepath = here.split("C:")[1].trim().replace(/[\s\(\)]+$/,"");
+    if(!filepath) throw new AppError({status:500,info:here,message:"Logger failed!"});
     const filePathParts = filepath.split("\\");
     const fileInfo = "("+filePathParts[filePathParts.length - 1];//.replace(")","");
     return {functionName,fileInfo};
   };
   private static write = (k:LogTypes,...args:any[]):boolean => {
-    const test = Utils.isEnv(["test"]);
-    const verbose = Utils.isEnv("verbose");
-    const okErrOrWarn = ["ok","error","warn"].includes(k);
-    const iserror = k == "error";
-    const isProd = Utils.isProd();
-    const flag = `⚡️ [app-logger-${k}]:`;
-    const {functionName,fileInfo} = this.here_();
-    const color = this.colors[k];
-    const reset = this.colors.reset;
-    const log = console.log.bind(console,color,flag,reset);
-    const logHere = log.bind(console,functionName,fileInfo);
-    switch(true){
-      case isProd && !iserror:break;
-      // case !test && !okErrOrWarn:break; 
-      case isProd && !iserror:break;
-      case k == "here":
-      case verbose:logHere(...args);break;
-      default:log(...args);break;
+    try{
+      const test = Utils.isEnv(["test"]);
+      const verbose = Utils.isEnv("verbose");
+      const okErrOrWarn = ["ok","error","warn"].includes(k);
+      const iserror = k == "error";
+      const isProd = Utils.isProd();
+      const flag = `⚡️ [app-logger-${k}]:`;
+      const {functionName,fileInfo} = this.here_();
+      const color = this.colors[k];
+      const reset = this.colors.reset;
+      const log = console.log.bind(console,color,flag,reset);
+      const logHere = log.bind(console,functionName,fileInfo);
+      switch(true){
+        case isProd && !iserror:break;
+        // case !test && !okErrOrWarn:break; 
+        case isProd && !iserror:break;
+        case k == "here":
+        case verbose:logHere(...args);break;
+        default:log(...args);break;
+      }
     }
+    catch(e){console.error(e);}
     return true;
   };
   static print = (k:string,title:string,...args:any[]):boolean => {

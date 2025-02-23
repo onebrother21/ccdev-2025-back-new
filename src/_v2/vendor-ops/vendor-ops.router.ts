@@ -10,21 +10,29 @@ const VendorOpsRouter = (cache:Utils.RedisCache) => {
   const router = Router();
 
   // Apply authentication middleware to all routes
-  router.use(AuthJWT);
+  router.use(AuthJWT());
 
   // 📌 Vendor Management
   router.post(routes.profile.register,[...validators.registerVendor,ctrl.registerVendor,...PostMiddleware]);
+  router.post(routes.profile.tempPswd,[...validators.registerVendor,ctrl.createTempPswd,...PostMiddleware]);
+  router.post(routes.profile.searchByName,[...validators.registerVendor,ctrl.searchVendorsByName,...PostMiddleware]);
+  router.post(routes.profile.joinAcct,[...validators.registerVendor,ctrl.joinVendorAccount,...PostMiddleware]);
+  router.post(routes.profile.leaveAcct,[...validators.registerVendor,ctrl.leaveVendorAccount,...PostMiddleware]);
+  router.post(routes.profile.removeUser,[...validators.registerVendor,ctrl.removeUserFromAccount,...PostMiddleware]);
+  router.post(routes.profile.transferMgmt,[...validators.registerVendor,ctrl.transferVendorMgmt,...PostMiddleware]);
+
   router.put(routes.profile.update,[...validators.updateVendorProfile, ctrl.updateVendorProfile,...PostMiddleware]);
   router.get(routes.profile.get,[ctrl.getVendorProfile,...PostMiddleware]);
   router.delete(routes.profile.delete,[ctrl.deleteVendorProfile,...PostMiddleware]);
   router.delete(routes.profile.deleteX,[ctrl.deleteXVendorProfile,...PostMiddleware]);
 
   // 📌 Product Management
+  router.get(routes.products.get,[ctrl.getInventory,...PostMiddleware]);
   router.post(routes.products.create,[...validators.createProduct, ctrl.createProduct,...PostMiddleware]);
   router.put(routes.products.update,[...validators.updateProduct, ctrl.updateProduct,...PostMiddleware]);
   router.delete(routes.products.delete,[...validators.deleteProduct, ctrl.deleteProduct,...PostMiddleware]);
   router.delete(routes.products.delete+"/x",[...validators.deleteProduct, ctrl.deleteXProduct,...PostMiddleware]);
-  router.get(routes.products.list,[ctrl.listVendorProducts,...PostMiddleware]);
+  router.get(routes.products.list,[ctrl.listProductsByVendor,...PostMiddleware]);
 
   // 📌 Order & Fulfillment
   router.get(routes.order.list,[ctrl.viewOrders,...PostMiddleware]);

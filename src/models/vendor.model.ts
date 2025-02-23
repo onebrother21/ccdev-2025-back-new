@@ -7,7 +7,7 @@ const ObjectId = Schema.Types.ObjectId;
 
 const itemsSchema = new Schema<Types.IVendor["items"][0]>({
   qty:{type:Number},
-  item:{type:ObjectId,ref:"products",required:true},
+  product:{type:ObjectId,ref:"products",required:true},
   receivedOn:{type:Date},
 },{_id:false,timestamps:false});
 
@@ -29,7 +29,7 @@ const vendorSchema = new Schema<Types.IVendor,Vendor,Types.IVendor>({
   location:{type:{type:String,default:"Point"},coordinates:[Number]},
   address:{type:Utils.getAddressSchema(),required:true},
   license:{type:Utils.getLicenseSchema()},
-  items:{type:[itemsSchema],default:[]},
+  items:{type:[itemsSchema]},
   tempPswd:{type:{code:String,expires:Date}},
   info:{type:Object},
 },{timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
@@ -68,12 +68,9 @@ vendorSchema.methods.json = function () {
   json.approval = this.approval;
   json.status = this.status;
   json.mgr = this.mgr;
-  json.items = this.items.slice(-10).map(o => ({
-    qty:o.qty,
-    item:o.item.json() as any,
-    receivedOn:o.receivedOn,
-  }));
+  json.itemCt = this.items.length;
   json.info = this.info;
+  json.location = this.location.coordinates as any;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
   return json as Types.IVendor;

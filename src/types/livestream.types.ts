@@ -1,5 +1,13 @@
 import { Document } from "mongoose";
-import { IAdmin, ICourier, ICustomer, IVendor,IArtist,IProfileModelNames, IContentReport } from './profiles';
+import {
+  IAdmin,
+  ICourier,
+  ICustomer,
+  IVendor,
+  IArtist,
+  IProfileModelNames,
+  IContentReport,
+} from './profiles';
 import { IUser } from "./user.types";
 
 // Enums

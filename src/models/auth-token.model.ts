@@ -1,14 +1,15 @@
 import mongoose,{Schema,Model} from 'mongoose';
+import Types from 'types';
 
-type AuthTokenModel = Model<any>;
+type AuthTokenModel = Model<Types.IAuthToken>;
 
-const authToken = new Schema({},{strict:false,timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
-const AuthToken = mongoose.model<any,AuthTokenModel>('authToken',authToken);
+const authToken = new Schema({},{strict:false,timestamps:false});
+const AuthToken = mongoose.model<Types.IAuthToken,AuthTokenModel>('authToken',authToken);
 export default AuthToken;
 
 
-type DeadTokenModel = Model<any>;
-const deadToken = new Schema({stub:{type:String,required:true}},{strict:false,timestamps:{createdAt:"createdOn",updatedAt:"updatedOn"}});
-const DeadToken = mongoose.model<any,AuthTokenModel>('deadToken',deadToken);
+type DeadTokenModel = Model<Types.IAuthToken>;
+const deadToken = new Schema({},{strict:false,timestamps:false});
+const DeadToken = mongoose.model<Types.IAuthToken,DeadTokenModel>('deadToken',deadToken);
 
-export { DeadToken };
+export { AuthToken,DeadToken };

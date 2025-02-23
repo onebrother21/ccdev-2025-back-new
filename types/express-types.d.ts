@@ -1,7 +1,7 @@
 interface IRequest extends Request_ {
-  user:IAppCreds;
+  token:{exp:any;iat:any;sub:string;};//expiresAt issuedAt subject
+  user:Document_ & Partial<IAppCreds>;
   profile:any;
-  token:string;
   session:any;
   bvars:any;
   device:any;

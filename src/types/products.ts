@@ -45,6 +45,7 @@ export type IProductType = {
   sku?: string; // Stock Keeping Unit identifier
   kind?: IProductKinds; // Product type/category
   type?: IProductTypes; // Product type/category
+  img?:string;
   concentration:{
     amt:number; // Product concentration (e.g., percentage, ratio)
     unit:string; // Product concentration unit

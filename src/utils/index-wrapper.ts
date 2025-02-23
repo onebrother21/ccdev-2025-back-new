@@ -9,6 +9,6 @@ export * from "./locales";
 export * from "./create-queue"
 export * from "./create-worker";
 export * from "./create-redis-conn-opts";
+export * from "./create-redis-cache";
 export * from "./distance-helper";
 export * from "./middleware-utils";
-export * from "./redis-cache";

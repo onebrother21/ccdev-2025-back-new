@@ -8,7 +8,7 @@ import Utils from "../../utils";
 const CustomerOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.CustomerOps;
   const router = Router();
-  router.use(AuthJWT);
+  router.use(AuthJWT());
   
   // 1️⃣ Account & Profile Management
   router.post(routes.Register,[...validators.registerCustomer,ctrl.registerCustomer,...PostMiddleware]);

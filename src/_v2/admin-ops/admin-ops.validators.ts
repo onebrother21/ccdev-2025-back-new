@@ -9,6 +9,6 @@ export class AdminOpsValidators {
     body('data.opts.delay').isNumeric().withMessage("Invalid job parameters").optional(),
     body('data.opts.every').isNumeric().withMessage("Invalid job parameters").optional(),
     body('data.data').isObject().withMessage("Invalid job parameters").optional(),
-  ],CheckValidation] as IHandler[];
+  ],CheckValidation()] as IHandler[];
 }
 export default AdminOpsValidators;

@@ -9,7 +9,14 @@ const AdminOpsRouter = (cache:Utils.RedisCache) => {
   const routes = V2Routes.AdminOps
   const router = Router();
   
-  router.use(AuthJWT);
+  router.use(AuthJWT());
+  router.post(routes.system.createBusinessVars,[ctrl.registerAdmin,...PostMiddleware]);
+  // 🔹 System Business Vars & Keys
+  router.post(routes.system.createBusinessVars,[ctrl.createBusinessVars,...PostMiddleware]);
+  router.get(routes.system.getBusinessVars,[ctrl.getBusinessVars(cache),...PostMiddleware]);
+  router.put(routes.system.updateBusinessVars,[ctrl.updateBusinessVars(cache),...PostMiddleware]);
+  router.get(routes.system.generateKeys,[ctrl.generateKeys,...PostMiddleware]);
+  //🔹 System Job Processors
   router.post(routes.jobs.create,[...validators.PostJob,ctrl.postJob,...PostMiddleware]);
   router.post(routes.jobs.logVars,[...validators.PostJob,ctrl.postLogVarsJob,...PostMiddleware]);
   //🔹 Business Management
@@ -46,8 +53,6 @@ const AdminOpsRouter = (cache:Utils.RedisCache) => {
   router.post(routes.analytics.monitorVendorPerformance,[ctrl.monitorVendorPerformance,...PostMiddleware]);
   router.post(routes.analytics.generateOperationalReports,[ctrl.generateOperationalReports,...PostMiddleware]);
   // 🔹 System Settings & Policies
-  router.post(routes.system.updateBusinessVars,[...validators.PostJob,ctrl.updateBusinessVars,...PostMiddleware]);
-  router.post(routes.system.generateKeys,[...validators.PostJob,ctrl.generateKeys,...PostMiddleware]);
   router.post(routes.settings.updatePlatformPolicies,[ctrl.updatePlatformPolicies,...PostMiddleware]);
   router.post(routes.settings.configureBusinessSettings,[ctrl.configureBusinessSettings,...PostMiddleware]);
   router.post(routes.settings.managePromotions,[ctrl.managePromotions,...PostMiddleware]);

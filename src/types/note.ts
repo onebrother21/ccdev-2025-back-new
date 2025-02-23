@@ -1,5 +1,6 @@
 import { Document } from "mongoose";
 import * as Profiles from "./profiles";
+
 export type INoteType = {
   user:Profiles.IAdmin|Profiles.ICourier|Profiles.ICustomer|Profiles.IVendor;
   userRef:`${Profiles.IProfileTypes}s`;

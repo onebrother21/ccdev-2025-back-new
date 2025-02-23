@@ -74,6 +74,7 @@ courierSchema.methods.json = function () {
   json.insurance = this.insurance;
   json.approval = this.approval;
   json.info = this.info;
+  json.location = this.location.coordinates as any;
   //json.createdOn = this.createdOn;
   //json.updatedOn = this.updatedOn;
   return json as Types.ICourier;

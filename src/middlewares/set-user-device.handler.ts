@@ -3,7 +3,7 @@ import Utils from "../utils";
 
 const deviceCookie = process.env.DEVICE_COOKIE || 'deviceCookie';
 
-export const SetUserDevice:IHandler = async (req, res, next) => {
+export const SetUserDevice:() => IHandler = () => async (req, res, next) => {
   const cookie = req.signedCookies[deviceCookie];
   const device_ = cookie?Utils.decrypt(cookie):{};
   if(device_) req.device = device_;//check available app versions and refresh device
@@ -19,7 +19,7 @@ export const SetUserDevice:IHandler = async (req, res, next) => {
       signed:true
     });
     req.device = device;
-    Utils.logger.print("debug",)
+    Utils.logger.print("log","app-user-device",device);
   }
   next();
 };

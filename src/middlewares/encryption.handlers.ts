@@ -1,6 +1,6 @@
 import Utils from '../utils';
 
-const DecryptData:IHandler = (req,res,next) => {
+const DecryptData:() => IHandler = () => (req,res,next) => {
   try {
     const isPostOrPut = ["post","put","patch"].includes(req.method.toLowerCase());
     const encryptedData = isPostOrPut && req.body.data;
@@ -24,7 +24,7 @@ const DecryptData:IHandler = (req,res,next) => {
     });
   }
 };
-const EncryptData:IHandler = (req, res,next) => {
+const EncryptData:() => IHandler = () => (req, res,next) => {
   try {
     if(res.locals.data) res.locals.data = Utils.encrypt(res.locals.data);
     next();

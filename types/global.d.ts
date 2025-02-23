@@ -3,8 +3,10 @@ declare type Response_ = import('express').Response;
 declare type Next_ = import('express').NextFunction;
 declare type Document_ = import('mongoose').Document;
 
-interface IAppCreds extends Document_ {
+interface IAppCreds {
+  id:string;
   role:string;
+  username:string;
   // appId:string;
   // appname:string;
 }

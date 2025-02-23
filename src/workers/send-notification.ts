@@ -1,4 +1,7 @@
 import { Job } from 'bullmq';
+import Models from '../models';
+import Types from "../types";
+import Utils from '../utils';
 import {
   sendEmail,
   sendInAppNotification,
@@ -6,9 +9,6 @@ import {
   sendSMS,
   sendDummy
 } from "./send-notification-helpers";
-import Models from '../models';
-import Types from "../types";
-import Utils from '../utils';
 
 type NotificationObj = {
   userContact:string;

@@ -19,25 +19,25 @@ const CreateProduct = [[
   body('data.price.per').if(body('data.price').exists()).trim().escape().notEmpty().withMessage('Invalid parameters'),
   body('data.receivedOn').isISO8601().withMessage('Invalid date'),
   body('data.expiration').isISO8601().withMessage('Invalid date'),
-],CheckValidation] as IHandler[];
+],CheckValidation()] as IHandler[];
 
 const UpdateProduct = [[
   param('id').isMongoId().withMessage('Valid product ID is required'),
   body('data').isObject().optional(),
-],CheckValidation] as IHandler[];
+],CheckValidation()] as IHandler[];
 
 const DeleteProduct = [[
   param('id').isMongoId().withMessage('Valid product ID is required'),
-],CheckValidation] as IHandler[];
+],CheckValidation()] as IHandler[];
 
 const QueryProductsByVendor = [[
   query('vendorId').isMongoId().withMessage('Valid vendor ID is required'),
-],CheckValidation] as IHandler[];
+],CheckValidation()] as IHandler[];
 
-export const productValidators = {
+export const productMgmtValidators = {
   CreateProduct,
   UpdateProduct,
   DeleteProduct,
   QueryProductsByVendor,
 };
-export default productValidators;
+export default productMgmtValidators;

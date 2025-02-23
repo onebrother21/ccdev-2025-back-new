@@ -7,16 +7,14 @@ export enum INotificationTemplates {
   VERIFY = "Hello and thank you for choosing HashDash. Your verification code is {{code}} and it expires in 15 minutes.",
   UNRECOGNIZED_LOGIN = "Hey {{name}}, we noticed an unrecognized login from a new device. If this wasn't you, please secure your account.",
   
-  VENDOR_REGISTERED = "Welcome {{name}}, thank you for registering your vendor account #{{accountNo}} with us!",
-  VENDOR_ACCT_TEMP_PSWD = "You have requested a temporary passcode to add someone to your vendor account. The code is {{tempPswd}}."+
-  " It expires in 30 minutes.",
-  VENDOR_ACCT_USER_ADDED = "User {{name}} have been added to vendor account #{{accountNo}}.",
-  VENDOR_ACCT_USER_REMOVED = "User {{name}} have been removed from vendor account #{{accountNo}}.",
-  VENDOR_DISABLED = "Your vendor account #{{accountNo}} has been disabled.",
-  VENDOR_REMOVED = "Your vendor account #{{accountNo}} has been removed.",
-
-
-
+  VENDOR_REGISTERED = "Welcome {{user}}, thank you for registering your vendor account {{vendorName}} with us!",
+  VENDOR_ACCT_TEMP_PSWD = "Your temporary passcode to add a user is {{tempPswd}}, It expires in 15 minutes.",
+  VENDOR_ACCT_USER_JOINED = "{{user}} has joined the {{vendorName}} vendor account.",
+  VENDOR_ACCT_USER_LEFT = "{{user}} has left the {{vendorName}} vendor account.",
+  VENDOR_ACCT_USER_REMOVED = "{{user}} has been removed from the {{vendorName}} vendor account.",
+  VENDOR_ACCT_MGR_UPDATED = "{{user}} is now managing the {{vendorName}} vendor account.",
+  VENDOR_DISABLED = "Vendor account {{vendorName}} has been disabled.",
+  VENDOR_REMOVED = "Vendor account {{vendorName}} has been removed.",
 
   COURIER_ASSIGNED = `You have been assigned order {{orderId}}. Please accept or reject.`,
   COURIER_ASSIGNMENT_CANCELLED = `Order assignment canceled: {{orderId}}`,

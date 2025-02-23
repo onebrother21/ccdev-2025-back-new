@@ -1,50 +1,73 @@
 import Utils from '../../utils';
 import Types from "../../types";
+import Models from '../../models';
 import Services from '../../services';
+import MyQueueNames from "../../workers";
 
-const randomSleepQ = Utils.createQueue("random-sleep");
-const scheduleNotificationsQ = Utils.createQueue("schedule-notifications");
-const autoAssignCouriersQ = Utils.createQueue("auto-assign-couriers");
-const bulkEditCollectionQ = Utils.createQueue("bulk-edit-collection");
-const logDataQ = Utils.createQueue("log-data");
+const myQueues = Object.values(MyQueueNames).reduce((o,k) => ({...o,[k]:Utils.createQueue(k)}),{});
 
 export class AdminOpsService {
+  static registerAdmin = async (user:Types.IUser,data:any) => {
+    const role = Types.IProfileTypes.VENDOR;
+    const vendor = new Models.Admin({
+      ...data,
+      mgr:user._id,
+      users:[user._id],
+      location:{type:"Point",coordinates:data.location}
+    });
+    await vendor.save();
+    user.profiles[role] = vendor.id;
+    await user.save();
+    //Send VENDOR_REGISTERED
+    const notificationMethod = Types.INotificationSendMethods.EMAIL;
+    const notificationData =  {vendorName:vendor.name};
+    await Services.Notification.createNotification("VENDOR_REGISTERED",notificationMethod,[user.id],notificationData);
+    return true;
+  };
   static postJob = async (user:Types.IUser,{type,opts:{delay,every} = {},data}:any) => {
     const opts:any = {};
-    let result;
+    let result:any;
     switch(type){
       case "doRandomSleep":{
         if(!delay) throw new Utils.AppError(422,"operation failed");
         opts.delay = delay * 1000; // Convert seconds to milliseconds
-        const job = await randomSleepQ.add('sleep-job', { title:data.title }, opts);
+        const job = await myQueues["random-sleep"].add('random-sleep-job',{ title:data.title }, opts);
         result = {message:`Random sleep processor added, Job: ${job.id}`};
         break;
       }
       case "scheduleNotifications":{
         if(!every) throw new Utils.AppError(422,"operation failed");
         opts.repeat = {every:every * 60 * 1000}; // Convert minutes to milliseconds
-        const job = await scheduleNotificationsQ.add('schedule-notifications-job',{},opts);
+        const job = await myQueues["schedule-notifications"].add('schedule-notifications-job',{},opts);
         result =  {message:`Notification processor on repeat every ${every} ms, Job: ${job.id}`};
         break;
       }
       case "autoAssignCouriers":{
         if(!every) throw new Utils.AppError(422,"operation failed");
         opts.repeat = {every:every * 60 * 1000}; // Convert minutes to milliseconds
-        const job = await autoAssignCouriersQ.add('auto-assign-couriers-job',{},opts);
+        const job = await myQueues["auto-assign-couriers"].add('auto-assign-couriers-job',{},opts);
         result =  {success: true,message:`Auto assigning couriers on repeat every ${every} ms, Job: ${job.id}`};
         break;
       }
       case "bulkEditCollection":{
         if(!(data.modelName && data.newProps)) throw new Utils.AppError(422,"operation failed");
-        const job = await bulkEditCollectionQ.add('bulk-edit-collection-job',data,opts);
+        const job = await myQueues["bulk-edit-collection"].add('bulk-edit-collection-job',data,opts);
         result =  {success: true,message:`Bulk Edit: ${data.modelName.toLocaleUpperCase()} -> Submitted, Job: ${job.id}`};
         break;
       }
       case "logData":{
         if(!data) throw new Utils.AppError(422,"operation failed");
-        const job = await logDataQ.add('log-data-job',data,opts);
+        const job = await myQueues["log-data"].add('log-data-job',data,opts);
         const jobId = job.id || "Unknown";
         result =  {success: true,message:`Log Data -> SUBMITTED, Job: ${jobId}`};
+        break;
+      }
+      case "tokenCleanup":{
+        if(!data) throw new Utils.AppError(422,"operation failed");
+        opts.repeat = {every:every * 60 * 1000}; // Convert minutes to milliseconds
+        const job = await myQueues["token-cleanup"].add('token-cleanup-job',data,opts);
+        const jobId = job.id || "Unknown";
+        result =  {success: true,message:`Token CleanUp -> SUBMITTED, Job: ${jobId}`};
         break;
       }
       default:throw new Utils.AppError(400,"no worker found");

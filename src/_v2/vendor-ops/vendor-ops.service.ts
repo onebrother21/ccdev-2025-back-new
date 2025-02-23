@@ -3,13 +3,17 @@ import Types from "../../types";
 import Utils from '../../utils';
 import Services from '../../services';
 import bcrypt from 'bcryptjs';
+import { Document } from 'mongoose';
+import { AuthService } from "../auth/auth.service";
 
 const queryOpts = { new:true,runValidators: true,context:'query' };
 const saltRounds = Number(process.env.SALT_ROUNDS || 10);
 
 export class VendorOpsService {
   /** 📌 Vendor Management */
-  /** 📌 Creates vendor profile */
+  /** 📌 Creates vendor profile
+   * - refactor validator and controller for this method
+   */
   static registerVendor = async (user:Types.IUser,data:any) => {
     const role = Types.IProfileTypes.VENDOR;
     const vendor = new Models.Vendor({
@@ -23,12 +27,13 @@ export class VendorOpsService {
     await user.save();
     //Send VENDOR_REGISTERED
     const notificationMethod = Types.INotificationSendMethods.EMAIL;
-    const notificationData =  {accountNo:vendor.id};
+    const notificationData =  {vendorName:vendor.name};
     await Services.Notification.createNotification("VENDOR_REGISTERED",notificationMethod,[user.id],notificationData);
     return true;
   };
   /** 📌 Creates temp pswd for new acct user */
-  static createTempPswd = async (user:Types.IUser,vendor:Types.IVendor) => {
+  static createTempPswd = async (user:Types.IUser) => {
+    const vendor = user.profiles[Types.IProfileTypes.VENDOR] as Types.IVendor;
     if(vendor.mgr !== user.id) throw new Utils.AppError(401,"Insufficient permissions");
     const tempPswd = Utils.shortId();
     vendor.tempPswd = {
@@ -41,53 +46,95 @@ export class VendorOpsService {
     await Services.Notification.createNotification("VENDOR_ACCT_TEMP_PSWD",notificationMethod,[user.id],notificationData);
     return true;
   };
-  static joinVendorAccount = async (user:Types.IUser,{tempPswd,name}:any) => {
-    const vendor = await Models.Vendor.findOne({name});
-    if(!user || !vendor || vendor.tempPswd) throw new Utils.AppError(400,'Operation failed');
+  static searchVendorsByName = async (name:string) => {
+    const vendors = await Models.Vendor.find({name:{$regex:new RegExp(name),$options:"i"}}).sort("name").limit(10);
+    return {results:vendors.map(v => v.json())};
+  };
+  static joinVendorAccount = async (user:Types.IUser,vendorId:string,tempPswd:string) => {
+    // fail if missing user, vendorId or passcode
+    if(!user || !vendorId || !tempPswd) throw new Utils.AppError(400,'Operation failed');
+    const role = Types.IProfileTypes.VENDOR;
+    const vendor = await Models.Vendor.findById(vendorId);
+    // fail if vendor not found or no temp passcode is set on vendor
+    if(!vendor || vendor.tempPswd) throw new Utils.AppError(400,'Operation failed');
+    // fail if temp passcode has expired
     if(new Date(vendor.tempPswd.expires) <= new Date()) throw new Utils.AppError(422,'Operation failed');
+    // fail if temp passcode does not match
     if(!await bcrypt.compare(tempPswd,vendor.tempPswd.code)) throw new Utils.AppError(401,'Operation failed');
+    // success -> unset vendor's temp passcode, add user to vendor users, add vendor to user's profiles, save both models, return ok
     vendor.tempPswd = null;
     vendor.users.push(user.id);
+    user.profiles[role] = vendor.id;
     await vendor.save();
-    user.profiles[Types.IProfileTypes.VENDOR] = vendor.id;
     await user.save();
     //Send VENDOR_ACCT_USER_ADDED
     const notificationMethod = Types.INotificationSendMethods.EMAIL;
-    const notificationData =  {accountNo:vendor.id,addedUser:user.name};
-    await Services.Notification.createNotification("VENDOR_ACCT_USER_ADDED",notificationMethod,vendor.users,notificationData);
+    const notificationData =  {vendorName:vendor.name,user:user.fullname};
+    await Services.Notification.createNotification("VENDOR_ACCT_USER_JOINED",notificationMethod,vendor.users,notificationData);
     return true;
   };
-  static leaveVendorAccount = async (user:Types.IUser,vendor:Types.IVendor) => {
-    vendor.users = vendor.users.filter(o => typeof o === "string"?o:o.id !== user.id);
-    if(vendor.mgr == user.id) vendor.mgr = null;
+  /** need to revoke auth tokens and force profile refresh */
+  static leaveVendorAccount = async (user:Types.IUser,tokenStub:string) => {
+    const role = Types.IProfileTypes.VENDOR;
+    const vendor = user.profiles[role] as Types.IVendor;
+    // prune user from the vendor's users & unset user's vendor profile. if user is vendor mgr, unset vendor mgr
+    vendor.users = vendor.users.filter(vendorUser =>(vendorUser instanceof Document ? vendorUser.id : vendorUser) == user.id);
+    vendor.mgr == user.id?vendor.mgr = null:null;
+    user.profiles[role] = null;
+    await Models.DeadToken.create({stub:tokenStub});
+    // save models, notify vendor users and return ok
     await vendor.save();
-    user.profiles[Types.IProfileTypes.VENDOR] = null;
     await user.save();
+
     //Send VENDOR_ACCT_USER_REMOVED
     const notificationMethod = Types.INotificationSendMethods.EMAIL;
-    const notificationData =  {accountNo:vendor.id};
+    const notificationData =  {vendorName:vendor.name,user:user.fullname};
+    await Services.Notification.createNotification("VENDOR_ACCT_USER_LEFT",notificationMethod,vendor.users,notificationData);
+    return await AuthService.switchUserProfile(Types.IProfileTypes.CUSTOMER,user);
+  };
+  /** need to revoke auth tokens and force profile refresh */
+  static removeUserFromAccount = async (user:Types.IUser,userToRemoveId:string) => {
+    const role = Types.IProfileTypes.VENDOR;
+    const vendor = user.profiles[role] as Types.IVendor;
+    //are you the acct manager for this vendor profile
+    if(vendor.mgr !== user.id) throw new Utils.AppError(401,"Insufficient permissions");
+    // look up user to remove
+    const userToRemove = await Models.User.findById(userToRemoveId);
+    if(!userToRemove) throw new Utils.AppError(400,'Vendor accout user not found');
+    // prune user from the vendor's users & unset user's vendor profile
+    vendor.users = vendor.users.filter(vendorUser =>(vendorUser instanceof Document ? vendorUser.id : vendorUser) == userToRemoveId);
+    userToRemove.profiles[role] = null;
+    // save user and vendor
+    await vendor.save();
+    await userToRemove.save();
+    //Send VENDOR_ACCT_USER_REMOVED
+    const notificationMethod = Types.INotificationSendMethods.EMAIL;
+    const notificationData =  {vendorName:vendor.name,user:userToRemove.name};
     await Services.Notification.createNotification("VENDOR_ACCT_USER_REMOVED",notificationMethod,vendor.users,notificationData);
     return true;
   };
-  static removeUserFromAccount = async (user:Types.IUser,vendor:Types.IVendor,vendorUserId:string) => {
+  static transferVendorMgmt = async (user:Types.IUser,newMgrId:string) => {
+    const role = Types.IProfileTypes.VENDOR;
+    const vendor = user.profiles[role] as Types.IVendor;
+    // fail if user is not the current mgr for this profile
     if(vendor.mgr !== user.id) throw new Utils.AppError(401,"Insufficient permissions");
-    const vendorUser = await Models.User.findById(vendorUserId);
-    if(!vendorUser) throw new Utils.AppError(400,'Vendor accout user not found');
-    vendor.users = vendor.users.filter(o => typeof o === "string"?o:o.id !== vendorUser.id);
+    // transfer vendor mgr
+    vendor.mgr = newMgrId as any;
+    const newMgr = await Models.User.findById(newMgrId);
+    // save vendor
     await vendor.save();
-    vendorUser.profiles[Types.IProfileTypes.VENDOR] = null;
-    await vendorUser.save();
     //Send VENDOR_ACCT_USER_REMOVED
     const notificationMethod = Types.INotificationSendMethods.EMAIL;
-    const notificationData =  {accountNo:vendor.id,removedUser:vendorUser.name};
-    await Services.Notification.createNotification("VENDOR_ACCT_USER_REMOVED",notificationMethod,vendor.users,notificationData);
+    const notificationData =  {vendorName:vendor.name,newMgr:newMgr.fullname};
+    await Services.Notification.createNotification("VENDOR_ACCT_MGR_UPDATED",notificationMethod,vendor.users,notificationData);
     return true;
   };
   /** 📌 Updates vendor profile */
-  static updateVendorProfile = async (vendorId:string,data:any) => {
-    if(data.location) data.location = {type:"Point",coordinates:data.location};
+  static updateVendorProfile = async (vendorId:string,{location,items,...data}:any) => {
+    if(location) data.location = {type:"Point",coordinates:location};
     const vendor = await Models.Vendor.findByIdAndUpdate(vendorId,data,queryOpts);
-    if (!vendor) throw new Utils.AppError(404,"Vendor not found!");
+    if(!vendor) throw new Utils.AppError(404,"Vendor not found!");
+    //await vendor.populate("items.item");
     return vendor;
   };
   /** 📌 Fetches and popluates vendor profile */
@@ -106,32 +153,52 @@ export class VendorOpsService {
     return true;
   };
   // Product Management
+  /** 📌 Get inventory */
+  static getInventory = async (vendor:Types.IVendor) => {
+    await vendor.populate("items.product");
+    const items = vendor.items.slice(-10).map(o => ({
+      qty:o.qty,
+      product:o.product.json() as any,
+      receivedOn:o.receivedOn,
+    }));
+    return { items };
+  }
   /** 📌 Creates a product */
-  static createProduct = async (vendor:Types.IVendor, {qty,receivedOn,...productData}: any) => {
-    const product = await Models.Product.create({
+  static createProduct = async (vendor:Types.IVendor,{qty,receivedOn,...productData}: any) => {
+    const product = new Models.Product({
       ...productData,
       creator:vendor.id,
       location:vendor.location,
       vendors:[vendor.id]
     });
-    vendor.items.push({qty,receivedOn,item:product});
+    await product.save();
+    const item = {qty,receivedOn,product};
+    vendor.items.push(item);
     await vendor.save();
-    return product;
+    return {...item,product:item.product.json()};
   };
   /** 📌 Updates a product */
-  static updateProduct = async (vendorId: string, productId: string, productData: any) => {
-    return await Models.Product.findOneAndUpdate(
-      { _id:productId,vendor:vendorId },
-      productData,
-      queryOpts
-    );
+  static updateProduct = async (vendor: Types.IVendor,productId: string,{ qty, receivedOn, ...productData }: any) => {
+    const item = vendor.items.find(({ product }) => (product instanceof Document ? product.id : product) == productId);
+    if (!item) throw new Utils.AppError(404, "Product not found in vendor inventory.");
+    if(Object.keys(productData).length) item.product = await Models.Product.findByIdAndUpdate(productId,productData,queryOpts);
+    else if(!(item.product instanceof Document)) item.product = await Models.Product.findById(productId);
+    if (!item.product) throw new Utils.AppError(404, "Product not found.");
+    if (qty) item.qty = qty;
+    if (receivedOn) item.receivedOn = receivedOn;
+    await vendor.save();
+    return {
+      qty:item.qty,
+      receivedOn:item.receivedOn,
+      product:item.product.json(),
+    };
   };
   /** 📌 Marks a product for deletion */
   static deleteProduct = async (vendorId: string, productId: string) => {return await Models.Product.findOneAndDelete({ _id: productId, vendor: vendorId });}
   /** 📌 Deletes a product */
   static deleteXProduct = async (vendorId: string, productId: string) => {return await Models.Product.findOneAndDelete({ _id: productId, vendor: vendorId });}
   /** 📌 Lists a vendor's products */
-  static listVendorProducts = async (vendorId: string) => {return await Models.Product.find({ vendors:{$in:[vendorId]} });}
+  static listProductsByVendor = async (vendorId: string) => {return await Models.Product.find({ vendors:{$in:[vendorId]} });}
   // Order & Fulfillment
   /** 📌 To list all of the vendor's orders */
   static viewOrders = async (vendorId: string) => {return await Models.Order.find({ vendor: vendorId }).populate('customers');}

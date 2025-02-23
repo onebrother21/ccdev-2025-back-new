@@ -1,6 +1,5 @@
 import { doubleCsrf, DoubleCsrfConfigOptions } from "csrf-csrf";
 
-
 const csrfSecret = process.env.CSRF_SECRET;
 const doubleCsrfOptions:DoubleCsrfConfigOptions =  {
   getSecret: () => csrfSecret, // A function that optionally takes the request and returns a secret
@@ -17,7 +16,7 @@ const doubleCsrfOptions:DoubleCsrfConfigOptions =  {
 };
 const doubleCsrfUtils = doubleCsrf(doubleCsrfOptions);
 
-const SetCsrfToken:IHandler = async (req, res, next) => {
+const SetCsrfToken:() => IHandler = () => async (req, res, next) => {
   const csrfToken = doubleCsrfUtils.generateToken(req,res);
   res.locals.csrfToken = csrfToken;
   res.cookie('XSRF-TOKEN',csrfToken,{

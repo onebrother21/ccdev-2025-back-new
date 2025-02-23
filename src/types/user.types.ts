@@ -24,6 +24,7 @@ export type IUserType = Auth.IAuthParams & {
   email:string;
   mobile:string;
   name:{first:string;last:string;};
+  fullname:string;
   username:string;
   dob:string|Date;
   location:string;
@@ -48,8 +49,8 @@ export type IUserType = Auth.IAuthParams & {
   }
   info:any;
 };
-export type IUserInit = Pick<IUser,"email"|"role"|"dob">;
-export type IUserPreview = Pick<IUser,"id"|"location"|"name"|"role"> & {img?:string;title?:string;username?:string};
+export type IUserInit = Pick<IUserType,"email"|"role"|"dob">;
+export type IUserPreview = Pick<IUserType,"location"|"name"|"role"> & {id:string;img?:string;title?:string;username?:string};
 export type IUserJson = IUserPreview & Pick<IUserType,"prefs"|"meta"|"status"|"info"> & {
   profile:Profiles.IAdmin|Profiles.ICourier|Profiles.ICustomer|Profiles.IVendor;
   memberSince:Date;
@@ -64,6 +65,6 @@ export interface IUserMethods {
   toAge():number|null;
   getUserContactByMethod(method:Notifications.INotificationSendMethods):string;
   preview(role:Profiles.IProfileTypes):IUserPreview;
-  json(role:Profiles.IProfileTypes,auth?:boolean):Partial<IUserJson>;
+  json(role:Profiles.IProfileTypes,auth?:boolean):IUserJson;
 }
 export interface IUser extends IUserType,IUserMethods,Document {}

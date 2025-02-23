@@ -16,6 +16,63 @@ export class VendorOpsController {
       next();
     } catch (e) { next(e); }
   };
+  static createTempPswd:IHandler = async (req,res,next) => {
+    try {
+      const user = req.user as Types.IUser;
+      res.locals.success = true;
+      res.locals.data = await VendorOpsService.createTempPswd(user);
+      next();
+    } catch (e) { next(e); }
+  };
+  static searchVendorsByName:IHandler = async (req,res,next) => {
+    try {
+      res.locals.success = true;
+      res.locals.data = await VendorOpsService.searchVendorsByName(req.query.q as string);
+      next();
+    } catch (e) { next(e); }
+  };
+  static joinVendorAccount:IHandler = async (req,res,next) => {
+    try {
+      const user = req.user as Types.IUser;
+      res.locals.success = true;
+      res.locals.data = await VendorOpsService.joinVendorAccount(user,req.params.vendorId,req.body.data.tempPswd);
+      next();
+    } catch (e) { next(e); }
+  };
+  /** Leave Vendor Account 
+   * 
+   *  - auth operation, requires confirmation
+   *  - returns user as customer, auth tokens
+   */
+  static leaveVendorAccount:IHandler = async (req,res,next) => {
+    try {
+      const user_ = req.user as Types.IUser;
+      const tokenStub = res.locals.tokenStub;
+      const {user,accessToken,refreshToken} = await VendorOpsService.leaveVendorAccount(user_,tokenStub);
+      res.locals.success = true;
+      res.locals.token = {accessToken,refreshToken};
+      res.locals.data = user;
+      req.user = user;
+      next();
+    } catch(e){ next(e); }
+  };
+  static removeUserFromAccount:IHandler = async (req,res,next) => {
+    try {
+      const user = req.user as Types.IUser;
+      const userToRemove = req.params.userToRemoveId;
+      res.locals.success = true;
+      res.locals.data = await VendorOpsService.removeUserFromAccount(user,userToRemove);
+      next();
+    } catch (e) { next(e); }
+  };
+  static transferVendorMgmt:IHandler = async (req,res,next) => {
+    try {
+      const user = req.user as Types.IUser;
+      res.locals.success = true;
+      res.locals.data = await VendorOpsService.transferVendorMgmt(user,req.params.newMgrId);
+      next();
+    } catch (e) { next(e); }
+  };
   static updateVendorProfile:IHandler = async (req,res,next) => {
     try {
       const vendor_ = req.profile as Types.IVendor;
@@ -57,25 +114,31 @@ export class VendorOpsController {
     } catch (e) { next(e); }
   };
   // Product Management
+  static getInventory:IHandler = async (req,res,next) => {
+    try {
+      const vendor = req.profile as Types.IVendor;
+      res.locals.success = true;
+      res.locals.data = await VendorOpsService.getInventory(vendor);
+      next();
+    } catch (e) { next(e); }
+  };
   static createProduct:IHandler = async (req,res,next) => {
     try {
-      const user = req.user as Types.IUser;
       const vendor = req.profile as Types.IVendor;
-      const product = await VendorOpsService.createProduct(vendor,req.body.data);
       res.locals.status = 201;
       res.locals.success = true;
       res.locals.message = "You have added a new product!";
-      res.locals.data = product.json();
+      res.locals.data = await VendorOpsService.createProduct(vendor,req.body.data);
       next();
     } catch (e) { next(e); }
   };
   static updateProduct:IHandler = async (req,res,next) => {
-    const vendor = req.profile as Types.IVendor;
-      try {
-          res.locals.success = true;
-          res.locals.data = await VendorOpsService.updateProduct(vendor.id, req.params.productId, req.body.data.data);
-          next();
-      } catch (e) { next(e); }
+    try {
+      const vendor = req.profile as Types.IVendor;
+      res.locals.success = true;
+      res.locals.data = await VendorOpsService.updateProduct(vendor,req.params.productId,req.body.data);
+      next();
+    } catch (e) { next(e); }
   };
   static deleteProduct:IHandler = async (req,res,next) => {
     const vendor = req.profile as Types.IVendor;
@@ -93,12 +156,13 @@ export class VendorOpsController {
           next();
       } catch (e) { next(e); }
   };
-  static listVendorProducts:IHandler = async (req,res,next) => {
+  /** this is not a venor method */
+  static listProductsByVendor:IHandler = async (req,res,next) => {
     try {
       const vendor = req.profile as Types.IVendor;
-      const results = await VendorOpsService.listVendorProducts(vendor.id);
+      const products = await VendorOpsService.listProductsByVendor(vendor.id);
       res.locals.success = true;
-      res.locals.data = {results:results.map(o => o.json())};
+      res.locals.data = {results:products.map(o => o.json())};
       next();
     } catch (e) { next(e); }
   };

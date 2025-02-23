@@ -1,6 +1,6 @@
 import Types from "../types";
 
-export const SetUserSession:IHandler = (req,res,next) => {
+export const SetUserSession:() => IHandler = () => (req,res,next) => {
   if(req.user){
     const {id,username,role} = req.user as Types.IUser;
     req.session.user = {id,username,role};

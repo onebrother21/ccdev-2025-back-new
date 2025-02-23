@@ -12,23 +12,39 @@ import autoAssignCouriers from './auto-assign-couriers';
 import bulkEditCollection from './bulk-edit-collection';
 import logData from './log-data';
 import clockBugs from './clock-bugs';
+import tokenCleanUp from './token-cleanup';
 
+enum MyQueueNames {
+  RANDOM_SLEEP = "random-sleep",
+  SCHEDULE_NOTIFICATIONS = "schedule-notifications",
+  FORMAT_NOTIFICATIONS = "format-notification",
+  SEND_NOTIFICATIONS = "send-notification",
+  AUTO_ASSIGN_COURIERS = "auto-assign-couriers",
+  BULK_EDIT_COLLECTION = "bulk-edit-collection",
+  LOG_DATA = "log-data",
+  CLOCK_BUGS = "clock-bugs",
+  TOKEN_CLEANUP = 'token-cleaup',
+}
+const MyWorkerProcessors = {
+  [MyQueueNames.RANDOM_SLEEP]:doRandomSleep,
+  [MyQueueNames.SCHEDULE_NOTIFICATIONS]:scheduleNotifications,
+  [MyQueueNames.FORMAT_NOTIFICATIONS]:formatNotification,
+  [MyQueueNames.SEND_NOTIFICATIONS]:sendNotification,
+  [MyQueueNames.AUTO_ASSIGN_COURIERS]:autoAssignCouriers,
+  [MyQueueNames.BULK_EDIT_COLLECTION]:bulkEditCollection,
+  [MyQueueNames.LOG_DATA]:logData,
+  [MyQueueNames.CLOCK_BUGS]:clockBugs,
+  [MyQueueNames.TOKEN_CLEANUP]:tokenCleanUp,
+}
+const dbString = process.env.DATABASE_URL;
+const logItems = ['error','closed','init','failed','completed'];
 export class MyWorkers {
   init = async (startDb:boolean) => {
-    const dbString = process.env.DATABASE_URL;
-    const logItems = ['error','closed','init','failed','completed'];
-
     if(startDb && dbString){
       await db.connect(dbString);
-      Utils.createWorker("random-sleep",doRandomSleep,{logItems});
-      Utils.createWorker("schedule-notifications",scheduleNotifications,{logItems});
-      Utils.createWorker("format-notification",formatNotification,{logItems});
-      Utils.createWorker("send-notification",sendNotification,{logItems});
-      Utils.createWorker("auto-assign-couriers",autoAssignCouriers,{logItems});
-      Utils.createWorker("bulk-edit-collection",bulkEditCollection,{logItems});
-      Utils.createWorker("log-data",logData,{logItems});
-      Utils.createWorker("clock-bugs",clockBugs,{logItems});
+      for(const k in MyQueueNames) Utils.createWorker(k,MyWorkerProcessors[k],{logItems});
     }
   }
 }
 export default MyWorkers;
+export { MyQueueNames };
